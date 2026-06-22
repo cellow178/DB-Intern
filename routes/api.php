@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CrudController;
 // use App\Http\Controllers\CustomController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\VisionMissionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,9 +19,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// 2. TARUH DI SINI AGAR BISA DIAKSES LEWAT BROWSER TANPA TERTALANG MIDDLEWARE SECRET
+Route::get('/vision-mission', [VisionMissionController::class, 'index']);
+
+
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
+    
+    // 3. TARUH PUT DI SINI KARENA UNTUK UPDATE DATA WAJIB AMAN / LOGIN VIA API
+    Route::put('/vision-mission', [VisionMissionController::class, 'update']);
+
+    // Route dinamis kustom bawaan project (Wajib di bawah route spesifik agar tidak bentrok)
     Route::get('/{model}', [CrudController::class, 'index']);
     Route::get('/{model}/dataset', [CrudController::class, 'dataset']);
     Route::post('/{model}', [CrudController::class, 'create']);
