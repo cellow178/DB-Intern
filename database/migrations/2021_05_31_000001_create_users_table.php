@@ -17,11 +17,11 @@ class CreateUsersTable extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('fullname');
-            $table->string('username')->unique();
+            $table->string('username', 100)->unique();
             $table->text('password');
             $table->string('email')->unique()->nullable();
-            $table->string('nisn')->unique()->nullable();
-            $table->foreignId('role_id')->nullable(false)->constrained('roles');
+            $table->string('nisn', 20)->unique()->nullable();
+            $table->foreignId('role_id')->constrained('roles');
             $table->string('reset_token')->nullable();
             $table->timestampTz('reset_token_expired_at')->nullable();
             $table->timestampTz('email_verified_at')->nullable();
