@@ -1,6 +1,5 @@
 <?php
 
-// app/Services/VisionMissionService.php
 namespace App\Services;
 
 use App\Models\GlobalConfig;
@@ -18,9 +17,19 @@ class VisionMissionService
         $config = GlobalConfig::select('school_vission')->first();
         
         // Mengambil seluruh misi aktif yang diurutkan dari terkecil ke terbesar (1, 2, 3...)
-        $missions = Mission::where('status_code', true)
+        $missionsData = Mission::where('status_code', true)
+            ->with('creator:id,username') 
             ->orderBy('order', 'asc')
-            ->get(['id', 'content', 'order']);
+            ->get(['id', 'content', 'order', 'created_by']);
+        
+        $missions = $missionsData->map(function ($mission) {
+            return [
+                'id' => $mission->id,
+                'content' => $mission->content,
+                'order' => $mission->order,
+                'created_by' => $mission->creator ? $mission->creator->username : null,
+            ];
+        });
 
         return [
             'vision' => $config ? $config->school_vission : null,
@@ -97,5 +106,22 @@ class VisionMissionService
 
             return true;
         });
+    }
+
+    /**
+     * Bisnis Logika 3: Membuat satu data misi baru secara mandiri (satuan)
+     */
+    public function storeMission(array $data, int $userId): Mission
+    {
+        // Mencari nilai urutan ('order') paling tinggi saat ini di database
+        $maxOrder = Mission::max('order') ?? 0;
+
+        // Simpan data misi baru ke database
+        return Mission::create([
+            'content'     => $data['content'],
+            'order'       => $maxOrder + 1, // Otomatis taruh di urutan paling bawah
+            'status_code' => $data['status_code'] ?? true,
+            'created_by'  => $userId,
+        ]);
     }
 }
