@@ -124,4 +124,28 @@ class VisionMissionService
             'created_by'  => $userId,
         ]);
     }
+    
+    /**
+     * Bisnis Logika 4: Menghapus data misi berdasarkan ID secara mandiri
+     */
+    public function destroyMission(int $id): bool
+    {
+        $mission = Mission::find($id);
+
+        if (!$mission) {
+            return false;
+        }
+
+        $mission->delete();
+
+        $missions = Mission::orderBy('order')->get();
+
+        foreach ($missions as $index => $item) {
+            $item->update([
+                'order' => $index + 1
+            ]);
+        }
+
+        return true;
+    }
 }

@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('news', function (Blueprint $table) {
+        Schema::create('news_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('slug')->unique();
-            $table->string('title');
-            $table->text('content');
-            $table->text('img_cover')->nullable();
-            $table->enum('status', ['archive', 'publish', 'draft']);
-            $table->boolean('is_highlight')->default(false);
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->boolean('active')->default(true);
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('news');
+        Schema::dropIfExists('news_categories');
     }
 };

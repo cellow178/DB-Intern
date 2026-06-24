@@ -52,4 +52,42 @@ class VisionMissionController extends Controller
             'message' => 'Visi dan Misi sekolah berhasil diperbarui.'
         ]);
     }
+
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'content' => 'required|string',
+            'status_code' => 'nullable|boolean',
+        ]);
+
+        $userId = Auth::id() ?? 1;
+        
+        $newMission = $this->visionMissionService->storeMission(
+            $request->only(['content', 'status_code']),
+            $userId
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Misi baru berhasil ditambahkan.',
+            'data' => $newMission
+        ], 201);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $deleted = $this->visionMissionService->destroyMission($id);
+
+        if (!$deleted) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data misi tidak ditemukan atau gagal dihapus.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Misi berhasil dihapus.'
+        ]);
+    }
 }
