@@ -5,6 +5,7 @@ use App\Http\Controllers\CrudController;
 // use App\Http\Controllers\CustomController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\VisionMissionController;
+use App\Http\Controllers\NewsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 // 2. TARUH DI SINI AGAR BISA DIAKSES LEWAT BROWSER TANPA TERTALANG MIDDLEWARE SECRET
 Route::get('/vision-mission', [VisionMissionController::class, 'index']);
+Route::get('/news', [NewsController::class, 'index']);
 
 
 Route::group([
