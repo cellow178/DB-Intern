@@ -4,16 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\News;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class NewsController extends Controller
 {
+    // GET News list with pagination, search, filter, and sort
     public function index(Request $request)
     {
         $search      = $request->query('search');
         $limit       = $request->query('limit', 10);
-        $sortBy     = $request->query('sort_by', 'id');
+        $sortBy      = $request->query('sort_by', 'id');
         $sort        = $request->query('sort', 'asc');
-        $categoryId  = $request->query('category_id');        
+        $categoryId  = $request->query('category_id');
         $status      = $request->query('status');
         $isHighlight = $request->query('is_highlight');
 
@@ -21,7 +25,7 @@ class NewsController extends Controller
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
         }
-        
+
         $news = News::with(['category', 'createdBy', 'updatedBy'])
             ->when($status, function ($query) use ($status) {
                 $query->where('status', $status);
@@ -31,41 +35,165 @@ class NewsController extends Controller
             })
             ->when($search, function ($query) use ($search) {
                 $query->where('title', 'ilike', "%{$search}%")
-                    ->orWhere('content', 'ilike', "%{$search}%");
+                    ->orWhere('content', 'ilike', "%{$search}%")
+                    ->orWhereHas('category', function ($q) use ($search) {
+                        $q->where('name', 'ilike', "%{$search}%");
+                    });
             })
             ->when($categoryId, function ($query) use ($categoryId) {
-            $query->where('category_id', $categoryId);
+                $query->where('category_id', $categoryId);
             })
-            ->when($status, function ($query) use ($status) {
-                $query->where('status', $status);
-            })
-            
             ->orderBy($sortBy, $sort)
             ->paginate($limit);
-            
+
+        return response()->json([
+            'success'   => true,
+            'total'     => $news->total(),
+            'totalPage' => $news->lastPage(),
+            'data'      => $news->through(function ($item) {
+                return [
+                    'id'               => $item->id,
+                    'title'            => $item->title,
+                    'category_id_name' => $item->category?->name,
+                    'author'           => $item->createdBy?->fullname,
+                    'publish_date'     => $item->created_at?->format('Y-m-d'),
+                ];
+            })->items(),
+        ]);
+    }
+
+    // POST Create news
+    public function create(Request $request)
+    {
+        // Validasi input
+        try {
+            $validated = $request->validate([
+                'category_id' => ['required', 'integer', 'exists:news_categories,id'],
+                'title'       => ['required', 'string', 'min:10'],
+                'content'     => ['required', 'string'],
+                'status'      => ['nullable', 'in:draft,publish'],
+            ], [
+                'category_id.required' => 'Kategori berita wajib diisi.',
+                'category_id.exists'   => 'Kategori yang dipilih tidak ditemukan.',
+                'title.required'       => 'Judul berita wajib diisi.',
+                'title.min'            => 'Judul berita minimal 10 karakter.',
+                'content.required'     => 'Konten berita wajib diisi.',
+                'status.in'            => 'Status hanya boleh draft atau publish.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        // Generate slug otomatis dari judul
+        $slug = Str::slug($validated['title']);
+
+        // Slug unik
+        $originalSlug = $slug;
+        $count = 1;
+        while (News::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count++;
+        }
+
+        // Simpan data
+        $news = News::create([
+            'category_id'  => $validated['category_id'],
+            'title'        => $validated['title'],
+            'slug'         => $slug,
+            'content'      => $validated['content'],
+            'status'       => $validated['status'] ?? 'draft',
+            'is_highlight' => false,
+            'created_by'   => Auth::id(),
+            'updated_by'   => Auth::id(),
+        ]);
+
+        $news->load(['category', 'createdBy', 'updatedBy']);
+
         return response()->json([
             'success' => true,
-            'totalNews'   => $news->total(),
-            'totalPage' => $news->lastPage(),
-            'currentPage' => $news->currentPage(),
-            'quantity' => $news->count(),
-            'data'    => $news->through(function ($item) {
-                return [
-                    'id'                  => $item->id,
-                    'slug'                => $item->slug,
-                    'title'               => $item->title,
-                    'category_id'         => $item->category_id,
-                    'category_id_name'    => $item->category?->name,
-                    'content'             => $item->content,
-                    'img_cover'           => $item->img_cover,
-                    'status'              => $item->status,
-                    'is_highlight'        => $item->is_highlight,
-                    'created_by_fullname' => $item->createdBy?->fullname,
-                    'updated_by_fullname' => $item->updatedBy?->fullname,
-                    'created_at'          => $item->created_at,
-                    'updated_at'          => $item->updated_at,
-                ];
-            }) ->items(),
+            'data'    => [
+                'id'                   => $news->id,
+                'slug'                 => $news->slug,
+                'title'                => $news->title,
+                'category_id'          => $news->category_id,
+                'category_id_name'     => $news->category?->name,
+                'content'              => $news->content,
+                'img_cover'            => $news->img_cover,
+                'status'               => $news->status,
+                'is_highlight'         => $news->is_highlight,
+                'created_by_fullname'  => $news->createdBy?->fullname,
+                'created_at'           => $news->created_at?->format('Y-m-d H:i:s'),
+                'updated_by_fullname'  => $news->updatedBy?->fullname,
+                'updated_at'           => $news->updated_at?->format('Y-m-d H:i:s'),
+            ],
+        ], 201);
+    }
+
+    // POST Update highlight news
+    public function updateHighlight(Request $request)
+    {
+        // Validasi input
+        try {
+            $validated = $request->validate([
+                'id' => ['required', 'integer', 'exists:news,id'],
+            ], [
+                'id.required' => 'ID berita wajib diisi.',
+                'id.integer'  => 'ID berita harus berupa angka.',
+                'id.exists'   => 'Berita tidak ditemukan.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        $news = News::find($validated['id']);
+
+        // Cek status berita harus publish
+        if ($news->status !== 'publish') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hanya berita berstatus publish yang dapat dijadikan highlight.',
+            ], 422);
+        }
+
+        // Hapus highlight berita lama
+        News::where('is_highlight', true)->update([
+            'is_highlight' => false,
+            'updated_by'   => Auth::id(),
+        ]);
+
+        // Set highlight berita baru
+        $news->update([
+            'is_highlight' => true,
+            'updated_by'   => Auth::id(),
+        ]);
+
+        $news->load(['category', 'createdBy', 'updatedBy']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berita berhasil dijadikan highlight.',
+            'data'    => [
+                'id'                  => $news->id,
+                'slug'                => $news->slug,
+                'title'               => $news->title,
+                'category_id'         => $news->category_id,
+                'category_id_name'    => $news->category?->name,
+                'content'             => $news->content,
+                'img_cover'           => $news->img_cover,
+                'status'              => $news->status,
+                'is_highlight'        => $news->is_highlight,
+                'created_by_fullname' => $news->createdBy?->fullname,
+                'created_at'          => $news->created_at?->format('Y-m-d H:i:s'),
+                'updated_by_fullname' => $news->updatedBy?->fullname,
+                'updated_at'          => $news->updated_at?->format('Y-m-d H:i:s'),
+            ],
         ]);
     }
 }

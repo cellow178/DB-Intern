@@ -28,11 +28,14 @@ Route::get('/news', [NewsController::class, 'index']);
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
-    
-    // 3. TARUH PUT DI SINI KARENA UNTUK UPDATE DATA WAJIB AMAN / LOGIN VIA API
-    Route::put('/vision-mission', [VisionMissionController::class, 'update']);
-    Route::post('/vision-mission', [VisionMissionController::class, 'store']);
-    Route::delete('/vision-mission/{id}', [VisionMissionController::class, 'destroy']);
+    // News
+    Route::post('/news/create', [NewsController::class, 'create']);
+    Route::post('/news/update-highlight', [NewsController::class, 'updateHighlight']);
+
+    // Visi & Misi
+    Route::post('/vision-mission/create', [VisionMissionController::class, 'create']);
+    Route::put('/vision-mission/update', [VisionMissionController::class, 'update']);
+    Route::delete('/vision-mission/delete/{id}', [VisionMissionController::class, 'destroy']);
 
     // Route dinamis kustom bawaan project (Wajib di bawah route spesifik agar tidak bentrok)
     Route::get('/{model}', [CrudController::class, 'index']);

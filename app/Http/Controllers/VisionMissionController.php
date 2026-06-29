@@ -53,7 +53,7 @@ class VisionMissionController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function create(Request $request): JsonResponse
     {
         $request->validate([
             'content' => 'required|string',
