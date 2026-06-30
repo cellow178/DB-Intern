@@ -54,9 +54,9 @@ class NewsController extends Controller
                 return [
                     'id'               => $item->id,
                     'title'            => $item->title,
-                    'category_id_name' => $item->category?->name,
+                    'category'         => $item->category?->name,
                     'author'           => $item->createdBy?->fullname,
-                    'publish_date'     => $item->created_at?->format('Y-m-d'),
+                    'publish_date'     => $item->updated_at?->format('Y-m-d'),
                 ];
             })->items(),
         ]);
@@ -119,7 +119,7 @@ class NewsController extends Controller
                 'slug'                 => $news->slug,
                 'title'                => $news->title,
                 'category_id'          => $news->category_id,
-                'category_id_name'     => $news->category?->name,
+                'category'             => $news->category?->name,
                 'content'              => $news->content,
                 'img_cover'            => $news->img_cover,
                 'status'               => $news->status,
@@ -130,6 +130,82 @@ class NewsController extends Controller
                 'updated_at'           => $news->updated_at?->format('Y-m-d H:i:s'),
             ],
         ], 201);
+    }
+
+    // PUT Update news
+    public function update(Request $request)
+    {
+        // Validasi input
+        try {
+            $validated = $request->validate([
+                'id'          => ['required', 'integer', 'exists:news,id'],
+                'category_id' => ['sometimes', 'required', 'integer', 'exists:news_categories,id'],
+                'title'       => ['sometimes', 'required', 'string', 'min:10'],
+                'content'     => ['sometimes', 'required', 'string'],
+                'status'      => ['sometimes', 'nullable', 'in:publish,draft'],
+            ], [
+                'id.required'           => 'ID berita wajib diisi.',
+                'id.exists'             => 'Berita tidak ditemukan.',
+                'category_id.required'  => 'Kategori berita wajib diisi.',
+                'category_id.exists'    => 'Kategori yang dipilih tidak ditemukan.',
+                'title.required'        => 'Judul berita wajib diisi.',
+                'title.min'             => 'Judul berita minimal 10 karakter.',
+                'content.required'      => 'Konten berita wajib diisi.',
+                'status.in'             => 'Status hanya boleh publish atau draft.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        $news = News::find($validated['id']);
+
+        // Title berubah, generate slug baru
+        if (isset($validated['title']) && $validated['title'] !== $news->title) {
+            $slug = Str::slug($validated['title']);
+
+            $originalSlug = $slug;
+            $count = 1;
+            while (News::where('slug', $slug)->where('id', '!=', $news->id)->exists()) {
+                $slug = $originalSlug . '-' . $count++;
+            }
+
+            $validated['slug'] = $slug;
+        }
+
+        $news->update([
+            'category_id' => $validated['category_id'] ?? $news->category_id,
+            'title'       => $validated['title'] ?? $news->title,
+            'slug'        => $validated['slug'] ?? $news->slug,
+            'content'     => $validated['content'] ?? $news->content,
+            'status'      => $validated['status'] ?? $news->status,
+            'updated_by'  => Auth::id(),
+        ]);
+
+        $news->load(['category', 'createdBy', 'updatedBy']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berita berhasil diperbarui.',
+            'data'    => [
+                'id'                  => $news->id,
+                'slug'                => $news->slug,
+                'title'               => $news->title,
+                'category_id'         => $news->category_id,
+                'category'            => $news->category?->name,
+                'content'             => $news->content,
+                'img_cover'           => $news->img_cover,
+                'status'              => $news->status,
+                'is_highlight'        => $news->is_highlight,
+                'created_by_fullname' => $news->createdBy?->fullname,
+                'created_at'          => $news->created_at?->format('Y-m-d H:i:s'),
+                'updated_by_fullname' => $news->updatedBy?->fullname,
+                'updated_at'          => $news->updated_at?->format('Y-m-d H:i:s'),
+            ],
+        ]);
     }
 
     // POST Update highlight news
@@ -194,6 +270,35 @@ class NewsController extends Controller
                 'updated_by_fullname' => $news->updatedBy?->fullname,
                 'updated_at'          => $news->updated_at?->format('Y-m-d H:i:s'),
             ],
+        ]);
+    }
+
+    // DELETE Delete news
+    public function destroy(Request $request)
+    {
+        // Validasi input
+        try {
+            $validated = $request->validate([
+                'id' => ['required', 'integer', 'exists:news,id'],
+            ], [
+                'id.required' => 'ID berita wajib diisi.',
+                'id.integer'  => 'ID berita harus berupa angka.',
+                'id.exists'   => 'Berita tidak ditemukan.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        $news = News::find($validated['id']);
+        $news->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berita berhasil dihapus.',
         ]);
     }
 }

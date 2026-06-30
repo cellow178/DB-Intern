@@ -31,6 +31,8 @@ Route::group([
     // News
     Route::post('/news/create', [NewsController::class, 'create']);
     Route::post('/news/update-highlight', [NewsController::class, 'updateHighlight']);
+    Route::put('/news/update/', [NewsController::class, 'update']);
+    Route::delete('/news/delete/', [NewsController::class, 'destroy']);
 
     // Visi & Misi
     Route::post('/vision-mission/create', [VisionMissionController::class, 'create']);
