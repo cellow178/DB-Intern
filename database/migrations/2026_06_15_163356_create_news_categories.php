@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('news_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->text('description')->nullable();
             $table->boolean('active')->default(true);
             $table->foreignId('created_by')->constrained('users');

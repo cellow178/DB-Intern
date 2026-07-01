@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class NewsController extends Controller
 {
-    // GET News list with pagination, search, filter, and sort
+    // GET News list
     public function index(Request $request)
     {
         $search      = $request->query('search');
@@ -62,19 +63,89 @@ class NewsController extends Controller
         ]);
     }
 
+    // GET News dataset/lookup
+    public function dataset(Request $request)
+    {
+        $search     = $request->query('search');
+        $categoryId = $request->query('category_id');
+        $status     = $request->query('status');
+
+        $news = News::select('id', 'title', 'slug', 'status', 'category_id')
+            ->where('title', 'ilike', "%{$search}%")
+            ->when($categoryId, function ($query) use ($categoryId) {
+                $query->where('category_id', $categoryId);
+            })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->orderBy('title', 'asc')
+            ->limit(20) 
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'total'   => $news->count(),
+            'data'    => $news->map(function ($item) {
+                return [
+                    'id'          => $item->id,
+                    'title'       => $item->title,
+                    'slug'        => $item->slug,
+                    'status'      => $item->status,
+                    'category_id' => $item->category?->name,
+                ];
+            }),
+        ]);
+    }
+
+    // GET News detail (Show) by ID
+    public function show(int $id)
+    {
+        $news = News::with(['category', 'createdBy', 'updatedBy'])->find($id);
+
+        if (!$news) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Berita tidak ditemukan.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'                   => $news->id,
+                'slug'                 => $news->slug,
+                'title'                => $news->title,
+                'category_id'          => $news->category_id,
+                'category'             => $news->category?->name,
+                'content'              => $news->content,
+                'img_cover'            => $news->img_cover,
+                'status'               => $news->status,
+                'is_highlight'         => $news->is_highlight,
+                'created_by_fullname'  => $news->createdBy?->fullname,
+                'created_at'           => $news->created_at?->format('Y-m-d H:i:s'),
+                'updated_by_fullname'  => $news->updatedBy?->fullname,
+                'updated_at'           => $news->updated_at?->format('Y-m-d H:i:s'),
+            ],
+        ]);
+    }
+
     // POST Create news
     public function create(Request $request)
     {
         // Validasi input
         try {
             $validated = $request->validate([
-                'category_id' => ['required', 'integer', 'exists:news_categories,id'],
+                'category_id' => [
+                    'required',
+                    'integer',
+                    Rule::exists('news_categories', 'id')->where('active', true),
+                ],
                 'title'       => ['required', 'string', 'min:10'],
                 'content'     => ['required', 'string'],
                 'status'      => ['nullable', 'in:draft,publish'],
             ], [
                 'category_id.required' => 'Kategori berita wajib diisi.',
-                'category_id.exists'   => 'Kategori yang dipilih tidak ditemukan.',
+                'category_id.exists'   => 'Kategori yang dipilih tidak ditemukan atau tidak aktif.',
                 'title.required'       => 'Judul berita wajib diisi.',
                 'title.min'            => 'Judul berita minimal 10 karakter.',
                 'content.required'     => 'Konten berita wajib diisi.',
@@ -139,7 +210,11 @@ class NewsController extends Controller
         try {
             $validated = $request->validate([
                 'id'          => ['required', 'integer', 'exists:news,id'],
-                'category_id' => ['sometimes', 'required', 'integer', 'exists:news_categories,id'],
+                'category_id' => [
+                    'required',
+                    'integer',
+                    Rule::exists('news_categories', 'id')->where('active', true),
+                ],
                 'title'       => ['sometimes', 'required', 'string', 'min:10'],
                 'content'     => ['sometimes', 'required', 'string'],
                 'status'      => ['sometimes', 'nullable', 'in:publish,draft'],
@@ -147,7 +222,7 @@ class NewsController extends Controller
                 'id.required'           => 'ID berita wajib diisi.',
                 'id.exists'             => 'Berita tidak ditemukan.',
                 'category_id.required'  => 'Kategori berita wajib diisi.',
-                'category_id.exists'    => 'Kategori yang dipilih tidak ditemukan.',
+                'category_id.exists'    => 'Kategori yang dipilih tidak ditemukan atau tidak aktif.',
                 'title.required'        => 'Judul berita wajib diisi.',
                 'title.min'             => 'Judul berita minimal 10 karakter.',
                 'content.required'      => 'Konten berita wajib diisi.',

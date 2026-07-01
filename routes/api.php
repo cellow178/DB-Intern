@@ -6,6 +6,7 @@ use App\Http\Controllers\CrudController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\VisionMissionController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\NewsCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,10 +21,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// 2. TARUH DI SINI AGAR BISA DIAKSES LEWAT BROWSER TANPA TERTALANG MIDDLEWARE SECRET
-Route::get('/vision-mission', [VisionMissionController::class, 'index']);
-Route::get('/news', [NewsController::class, 'index']);
+Route::get('/vision-mission/list', [VisionMissionController::class, 'index']);
 
+Route::get('/news/list', [NewsController::class, 'index']);
+Route::get('/news/dataset', [NewsController::class, 'dataset']);
+Route::get('/news/{id}', [NewsController::class, 'show']);
+
+Route::get('/news-category/list', [NewsCategoryController::class, 'index']);
+Route::get('/news-category/dataset', [NewsCategoryController::class, 'dataset']);
+Route::get('/news-category/{id}', [NewsCategoryController::class, 'show']);
 
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
@@ -34,10 +40,15 @@ Route::group([
     Route::put('/news/update/', [NewsController::class, 'update']);
     Route::delete('/news/delete/', [NewsController::class, 'destroy']);
 
+    // News Category
+    Route::post('/news-category/create', [NewsCategoryController::class, 'create']);
+    Route::put('/news-category/update/', [NewsCategoryController::class, 'update']);
+    Route::delete('/news-category/delete/', [NewsCategoryController::class, 'destroy']);
+
     // Visi & Misi
     Route::post('/vision-mission/create', [VisionMissionController::class, 'create']);
-    Route::put('/vision-mission/update', [VisionMissionController::class, 'update']);
-    Route::delete('/vision-mission/delete/{id}', [VisionMissionController::class, 'destroy']);
+    Route::put('/vision-mission/update/', [VisionMissionController::class, 'update']);
+    Route::delete('/vision-mission/delete/', [VisionMissionController::class, 'destroy']);
 
     // Route dinamis kustom bawaan project (Wajib di bawah route spesifik agar tidak bentrok)
     Route::get('/{model}', [CrudController::class, 'index']);
