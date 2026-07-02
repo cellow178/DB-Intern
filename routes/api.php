@@ -6,7 +6,7 @@ use App\Http\Controllers\CrudController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\VisionMissionController;
 use App\Http\Controllers\NewsController;
-use App\Http\Controllers\NewsCategoryController;
+use App\Http\Controllers\NewsCategoriesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,9 +27,9 @@ Route::get('/news/list', [NewsController::class, 'index']);
 Route::get('/news/dataset', [NewsController::class, 'dataset']);
 Route::get('/news/{id}', [NewsController::class, 'show']);
 
-Route::get('/news-category/list', [NewsCategoryController::class, 'index']);
-Route::get('/news-category/dataset', [NewsCategoryController::class, 'dataset']);
-Route::get('/news-category/{id}', [NewsCategoryController::class, 'show']);
+Route::get('/news-categories/list', [NewsCategoriesController::class, 'index']);
+Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
+Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show']);
 
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
@@ -41,9 +41,9 @@ Route::group([
     Route::delete('/news/delete/', [NewsController::class, 'destroy']);
 
     // News Category
-    Route::post('/news-category/create', [NewsCategoryController::class, 'create']);
-    Route::put('/news-category/update/', [NewsCategoryController::class, 'update']);
-    Route::delete('/news-category/delete/', [NewsCategoryController::class, 'destroy']);
+    Route::post('/news-categories/create', [NewsCategoriesController::class, 'create']);
+    Route::put('/news-categories/update/', [NewsCategoriesController::class, 'update']);
+    Route::delete('/news-categories/delete/', [NewsCategoriesController::class, 'destroy']);
 
     // Visi & Misi
     Route::post('/vision-mission/create', [VisionMissionController::class, 'create']);

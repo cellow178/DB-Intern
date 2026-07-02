@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class GlobalConfig extends Model
 {
-    protected $table = 'global_config'; // Menentukan nama tabel karena bukan jamak (plural)
+    protected $table = 'global_config';
 
     protected $fillable = [
         'profile_title',
@@ -27,4 +27,14 @@ class GlobalConfig extends Model
         'created_by',
         'updated_by'
     ];
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 }
