@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('category_name', 100);
             $table->boolean('status')->default('true');
             $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
+            $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);
         });
     }

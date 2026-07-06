@@ -1,26 +1,29 @@
 <?php
 
-namespace App\Models;
+    namespace App\Models;
+    use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-class Mission extends Model
-{
-    public function creator(): BelongsTo
+    class Mission extends Model
     {
-        return $this->belongsTo(User::class, 'created_by');
+        protected $fillable = [
+            'content',
+            'order',
+            'status_code',
+            'created_by',
+            'updated_by'
+        ];
+
+        protected $casts = [
+            'status_code' => 'boolean',
+        ];
+
+        public function createdBy()
+        {
+            return $this->belongsTo(User::class, 'created_by');
+        }
+
+        public function updatedBy()
+        {
+            return $this->belongsTo(User::class, 'updated_by');
+        }
     }
-
-    protected $fillable = [
-        'content',
-        'order',
-        'status_code',
-        'created_by',
-        'updated_by'
-    ];
-
-    protected $casts = [
-        'status_code' => 'boolean', // Otomatis mengubah 0/1 menjadi false/true
-    ];
-}

@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('missions', function (Blueprint $table) {
             $table->id();
             $table->string('content');
-            $table->integer('order');
+            $table->integer('order')->unique();
             $table->boolean('status_code')->default(true);
             $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
+            $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);
         });
     }

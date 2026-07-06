@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('img_cover');
             $table->string('description');
             $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
+            $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);
         });
     }

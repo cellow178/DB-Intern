@@ -57,7 +57,7 @@ class NewsController extends Controller
                     'title'            => $item->title,
                     'category'         => $item->category?->name,
                     'author'           => $item->createdBy?->fullname,
-                    'publish_date'     => $item->updated_at?->format('Y-m-d'),
+                    'publish_date'     => $item->created_at?->format('Y-m-d'),
                 ];
             })->items(),
         ]);
@@ -69,6 +69,7 @@ class NewsController extends Controller
         $search     = $request->query('search');
         $categoryId = $request->query('category_id');
         $status     = $request->query('status');
+        $limit      = $request->query('limit', 20);
 
         $news = News::select('id', 'title', 'slug', 'status', 'category_id')
             ->where('title', 'ilike', "%{$search}%")
@@ -79,7 +80,7 @@ class NewsController extends Controller
                 $query->where('status', $status);
             })
             ->orderBy('title', 'asc')
-            ->limit(20) 
+            ->limit($limit)
             ->get();
 
         return response()->json([
@@ -215,9 +216,9 @@ class NewsController extends Controller
                     'integer',
                     Rule::exists('news_categories', 'id')->where('active', true),
                 ],
-                'title'       => ['sometimes', 'required', 'string', 'min:10'],
-                'content'     => ['sometimes', 'required', 'string'],
-                'status'      => ['sometimes', 'nullable', 'in:publish,draft'],
+                'title'       => ['required', 'string', 'min:10'],
+                'content'     => ['required', 'string'],
+                'status'      => ['nullable', 'in:publish,draft'],
             ], [
                 'id.required'           => 'ID berita wajib diisi.',
                 'id.exists'             => 'Berita tidak ditemukan.',
@@ -260,11 +261,12 @@ class NewsController extends Controller
             'updated_by'  => Auth::id(),
         ]);
 
+        $title = $news->title;
         $news->load(['category', 'createdBy', 'updatedBy']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Berita berhasil diperbarui.',
+            'message' => "Berita '$title' berhasil diperbarui.",
             'data'    => [
                 'id'                  => $news->id,
                 'slug'                => $news->slug,
@@ -325,11 +327,12 @@ class NewsController extends Controller
             'updated_by'   => Auth::id(),
         ]);
 
+        $title = $news->title;
         $news->load(['category', 'createdBy', 'updatedBy']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Berita berhasil dijadikan highlight.',
+            'message' => "Berita '$title' berhasil dijadikan highlight.",
             'data'    => [
                 'id'                  => $news->id,
                 'slug'                => $news->slug,
@@ -369,11 +372,14 @@ class NewsController extends Controller
         }
 
         $news = News::find($validated['id']);
+
+        $title = $news->title;
+
         $news->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Berita berhasil dihapus.',
+            'message' => "Berita '$title' berhasil dihapus.",
         ]);
     }
 }

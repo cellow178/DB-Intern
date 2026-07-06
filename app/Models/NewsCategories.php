@@ -17,6 +17,10 @@ class NewsCategories extends Model
         'updated_by',
     ];
 
+    protected $casts = [
+        'active' => 'boolean',
+    ];
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

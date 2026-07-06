@@ -29,7 +29,7 @@ return new class extends Migration
             $table->text('footer_fb')->nullable();
             $table->text('footer_linkedin')->nullable();
             $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('updated_by')->nullable()->constrained('users');
+            $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);
         });
     }
