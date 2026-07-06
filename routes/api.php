@@ -49,6 +49,10 @@ Route::group([
     Route::put('/news-categories/update/', [NewsCategoriesController::class, 'update']);
     Route::delete('/news-categories/delete/', [NewsCategoriesController::class, 'destroy']);
 
+    // Global Config
+    Route::get('/global-config/show', [App\Http\Controllers\GlobalConfigController::class, 'show']);
+    Route::put('/global-config/update', [App\Http\Controllers\GlobalConfigController::class, 'update']);
+
     // Route dinamis kustom bawaan project (Wajib di bawah route spesifik agar tidak bentrok)
     Route::get('/{model}', [CrudController::class, 'index']);
     Route::get('/{model}/dataset', [CrudController::class, 'dataset']);
