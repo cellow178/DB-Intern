@@ -17,9 +17,9 @@ return new class extends Migration
             $table->text('profile_description');
             $table->text('img_profile_1');
             $table->text('img_profile_2');
-            $table->text('school_vission');
+            $table->text('school_vision');
             $table->text('video_profile');
-            $table->string('school-name', 150);
+            $table->string('school_name', 150);
             $table->string('footer_description');
             $table->string('motto', 100);
             $table->string('school_telephone', 150);

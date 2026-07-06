@@ -20,35 +20,31 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::get('/missions/list', [MissionsController::class, 'index']);
-Route::get('/missions/dataset', [MissionsController::class, 'dataset']);
-Route::get('/missions/{id}', [MissionsController::class, 'show']);
-
-Route::get('/news/list', [NewsController::class, 'index']);
-Route::get('/news/dataset', [NewsController::class, 'dataset']);
-Route::get('/news/{id}', [NewsController::class, 'show']);
-
-Route::get('/news-categories/list', [NewsCategoriesController::class, 'index']);
-Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
-Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show']);
-
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
 
     // Missions
+    Route::get('/missions/list', [MissionsController::class, 'index']);
+    Route::get('/missions/dataset', [MissionsController::class, 'dataset']);
+    Route::get('/missions/{id}', [MissionsController::class, 'show']);
     Route::post('/missions/create', [MissionsController::class, 'create']);
     Route::put('/missions/update/', [MissionsController::class, 'update']);
     Route::delete('/missions/delete/', [MissionsController::class, 'destroy']);
 
     // News
+    Route::get('/news/list', [NewsController::class, 'index']);
+    Route::get('/news/dataset', [NewsController::class, 'dataset']);
+    Route::get('/news/{id}', [NewsController::class, 'show']);
     Route::post('/news/create', [NewsController::class, 'create']);
     Route::post('/news/update-highlight', [NewsController::class, 'updateHighlight']);
     Route::put('/news/update/', [NewsController::class, 'update']);
     Route::delete('/news/delete/', [NewsController::class, 'destroy']);
 
     // News Category
+    Route::get('/news-categories/list', [NewsCategoriesController::class, 'index']);
+    Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
+    Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show']);
     Route::post('/news-categories/create', [NewsCategoriesController::class, 'create']);
     Route::put('/news-categories/update/', [NewsCategoriesController::class, 'update']);
     Route::delete('/news-categories/delete/', [NewsCategoriesController::class, 'destroy']);

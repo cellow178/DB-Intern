@@ -6,6 +6,7 @@ use App\Models\Mission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class MissionsController extends Controller
 {
@@ -88,12 +89,13 @@ class MissionsController extends Controller
         try {
             $validated = $request->validate([
                 'content' => ['required', 'string'],
-                'order'   => ['required', 'integer', 'min:1'],
+                'order'   => ['required', 'integer', 'min:1', Rule::unique('missions', 'order')],
             ], [
                 'content.required' => 'Isi misi wajib diisi.',
                 'order.required'   => 'Urutan misi wajib diisi.',
                 'order.integer'    => 'Urutan misi harus berupa angka.',
                 'order.min'        => 'Urutan misi minimal 1.',
+                'order.unique'     => 'Urutan misi sudah digunakan, silakan pilih urutan lain.',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -131,26 +133,32 @@ class MissionsController extends Controller
     // PUT Update mission
     public function update(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'id'      => ['required', 'integer', 'exists:missions,id'],
-                'content' => ['sometimes', 'required', 'string'],
-                'order'   => ['sometimes', 'required', 'integer', 'min:1'],
-            ], [
-                'id.required'      => 'ID misi wajib diisi.',
-                'id.exists'        => 'Misi tidak ditemukan.',
-                'content.required' => 'Isi misi wajib diisi.',
-                'order.required'   => 'Urutan misi wajib diisi.',
-                'order.integer'    => 'Urutan misi harus berupa angka.',
-                'order.min'        => 'Urutan misi minimal 1.',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal.',
-                'errors'  => $e->errors(),
-            ], 422);
-        }
+    try {
+        $validated = $request->validate([
+            'id'      => ['required', 'integer', 'exists:missions,id'],
+            'content' => ['required', 'string'],
+            'order'   => [
+                'required',
+                'integer',
+                'min:1',
+                Rule::unique('missions', 'order')->ignore($request->input('id')),
+            ],
+        ], [
+            'id.required'      => 'ID misi wajib diisi.',
+            'id.exists'        => 'Misi tidak ditemukan.',
+            'content.required' => 'Isi misi wajib diisi.',
+            'order.required'   => 'Urutan misi wajib diisi.',
+            'order.integer'    => 'Urutan misi harus berupa angka.',
+            'order.min'        => 'Urutan misi minimal 1.',
+            'order.unique'     => 'Urutan misi sudah digunakan, silakan pilih urutan lain.',
+        ]);
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validasi gagal.',
+            'errors'  => $e->errors(),
+        ], 422);
+    }
 
         $mission = Mission::find($validated['id']);
 
