@@ -7,6 +7,7 @@ use App\Http\Controllers\UploadController;
 use App\Http\Controllers\MissionsController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsCategoriesController;
+use App\Http\Controllers\FeedbacksCategoriesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,7 @@ Route::group([
     Route::get('/missions/{id}', [MissionsController::class, 'show']);
     Route::post('/missions/create', [MissionsController::class, 'create']);
     Route::put('/missions/update/', [MissionsController::class, 'update']);
+    Route::post('/missions/update-status/', [MissionsController::class, 'updateStatus']);
     Route::delete('/missions/delete/', [MissionsController::class, 'destroy']);
 
     // News
@@ -48,6 +50,14 @@ Route::group([
     Route::post('/news-categories/create', [NewsCategoriesController::class, 'create']);
     Route::put('/news-categories/update/', [NewsCategoriesController::class, 'update']);
     Route::delete('/news-categories/delete/', [NewsCategoriesController::class, 'destroy']);
+
+    // Feedbacks Category
+    Route::get('/feedbacks-categories/list', [FeedbacksCategoriesController::class, 'index']);
+    Route::get('/feedbacks-categories/dataset', [FeedbacksCategoriesController::class, 'dataset']);
+    Route::get('/feedbacks-categories/{id}', [FeedbacksCategoriesController::class, 'show']);
+    Route::post('/feedbacks-categories/create', [FeedbacksCategoriesController::class, 'create']);
+    Route::put('/feedbacks-categories/update/', [FeedbacksCategoriesController::class, 'update']);
+    Route::delete('/feedbacks-categories/delete/', [FeedbacksCategoriesController::class, 'destroy']);
 
     // Global Config
     Route::get('/global-config/show', [App\Http\Controllers\GlobalConfigController::class, 'show']);

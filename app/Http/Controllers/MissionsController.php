@@ -13,19 +13,32 @@ class MissionsController extends Controller
     // GET Mission list
     public function index(Request $request)
     {
+        $search      = $request->query('search');
+        $limit       = $request->query('limit', 10);
+        $sortBy      = $request->query('sort_by', 'id');
+        $sort        = $request->query('sort', 'asc');
         $statusCode = $request->query('status_code');
+
+        $allowedSorts = ['id', 'title', 'status_code', 'updated_at'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'id';
+        }
 
         $missions = Mission::with(['createdBy', 'updatedBy'])
             ->when($statusCode !== null, function ($query) use ($statusCode) {
                 $query->where('status_code', filter_var($statusCode, FILTER_VALIDATE_BOOLEAN));
             })
-            ->orderBy('order', 'asc')
-            ->get();
+            ->when($search, function ($query) use ($search) {
+                $query->where('content', 'ilike', "%{$search}%");
+            })
+            ->orderBy($sortBy, $sort)
+            ->paginate($limit);
 
         return response()->json([
-            'success' => true,
-            'total'   => $missions->count(),
-            'data'    => $missions->map(function ($item) {
+            'success'   => true,
+            'total'     => $missions->total(),
+            'totalPage' => $missions->lastPage(),
+            'data'      => $missions->through(function ($item) {
                 return [
                     'id'                  => $item->id,
                     'content'             => $item->content,
@@ -34,19 +47,25 @@ class MissionsController extends Controller
                     'created_by_fullname' => $item->createdBy?->fullname,
                     'updated_by_fullname' => $item->updatedBy?->fullname,
                 ];
-            }),
+            })->items(),
         ]);
     }
 
     // GET Mission dataset/lookup
-
     public function dataset(Request $request)
     {
+        $search = $request->query('search');
+        $limit = $request->query('limit', 10);
+
         $missions = Mission::select('id', 'content')
+            ->when($search, function ($query) use ($search) {
+                $query->where('content', 'ilike', "%{$search}%");
+            })
             ->when($request->query('status_code') !== null, function ($query) use ($request) {
                 $query->where('status_code', filter_var($request->query('status_code'), FILTER_VALIDATE_BOOLEAN));
             })
             ->orderBy('order', 'asc')
+            ->limit($limit)
             ->get();
 
         return response()->json([
@@ -133,57 +152,57 @@ class MissionsController extends Controller
     // PUT Update mission
     public function update(Request $request)
     {
-    try {
-        $validated = $request->validate([
-            'id'      => ['required', 'integer', 'exists:missions,id'],
-            'content' => ['required', 'string'],
-            'order'   => [
-                'required',
-                'integer',
-                'min:1',
-                Rule::unique('missions', 'order')->ignore($request->input('id')),
-            ],
-        ], [
-            'id.required'      => 'ID misi wajib diisi.',
-            'id.exists'        => 'Misi tidak ditemukan.',
-            'content.required' => 'Isi misi wajib diisi.',
-            'order.required'   => 'Urutan misi wajib diisi.',
-            'order.integer'    => 'Urutan misi harus berupa angka.',
-            'order.min'        => 'Urutan misi minimal 1.',
-            'order.unique'     => 'Urutan misi sudah digunakan, silakan pilih urutan lain.',
-        ]);
-    } catch (ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validasi gagal.',
-            'errors'  => $e->errors(),
-        ], 422);
-    }
+        try {
+            $validated = $request->validate([
+                'id'      => ['required', 'integer', 'exists:missions,id'],
+                'content' => ['required', 'string'],
+                'order'   => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    Rule::unique('missions', 'order')->ignore($request->input('id')),
+                ],
+            ], [
+                'id.required'      => 'ID misi wajib diisi.',
+                'id.exists'        => 'Misi tidak ditemukan.',
+                'content.required' => 'Isi misi wajib diisi.',
+                'order.required'   => 'Urutan misi wajib diisi.',
+                'order.integer'    => 'Urutan misi harus berupa angka.',
+                'order.min'        => 'Urutan misi minimal 1.',
+                'order.unique'     => 'Urutan misi sudah digunakan, silakan pilih urutan lain.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
 
-        $mission = Mission::find($validated['id']);
+            $mission = Mission::find($validated['id']);
 
-        $mission->update([
-            'content'    => $validated['content'] ?? $mission->content,
-            'order'      => $validated['order'] ?? $mission->order,
-            'updated_by' => Auth::id(),
-        ]);
+            $mission->update([
+                'content'    => $validated['content'] ?? $mission->content,
+                'order'      => $validated['order'] ?? $mission->order,
+                'updated_by' => Auth::id(),
+            ]);
 
-        $mission->load(['createdBy', 'updatedBy']);
+            $mission->load(['createdBy', 'updatedBy']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Misi berhasil diperbarui.',
-            'data'    => [
-                'id'                  => $mission->id,
-                'content'             => $mission->content,
-                'order'               => $mission->order,
-                'status_code'         => $mission->status_code,
-                'created_by_fullname' => $mission->createdBy?->fullname,
-                'created_at'          => $mission->created_at?->format('Y-m-d H:i:s'),
-                'updated_by_fullname' => $mission->updatedBy?->fullname,
-                'updated_at'          => $mission->updated_at?->format('Y-m-d H:i:s'),
-            ],
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => "Misi berhasil diperbarui.",
+                'data'    => [
+                    'id'                  => $mission->id,
+                    'content'             => $mission->content,
+                    'order'               => $mission->order,
+                    'status_code'         => $mission->status_code,
+                    'created_by_fullname' => $mission->createdBy?->fullname,
+                    'created_at'          => $mission->created_at?->format('Y-m-d H:i:s'),
+                    'updated_by_fullname' => $mission->updatedBy?->fullname,
+                    'updated_at'          => $mission->updated_at?->format('Y-m-d H:i:s'),
+                ],
+            ]);
     }
 
     // POST Toggle status (aktif/nonaktif)

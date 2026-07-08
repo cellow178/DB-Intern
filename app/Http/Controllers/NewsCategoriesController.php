@@ -21,7 +21,7 @@ class NewsCategoriesController extends Controller
         $active = $request->query('active');
 
         // Validasi parameter sort_by dan active
-        $allowedSorts = ['id', 'name', 'active'];
+        $allowedSorts = ['id', 'name', 'active', 'updated_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
         }
@@ -41,7 +41,7 @@ class NewsCategoriesController extends Controller
                 $query->where('name', 'ilike', "%{$search}%")
                     ->orWhere('description', 'ilike', "%{$search}%");
             })
-                        ->orderBy($sortBy, $sort)
+            ->orderBy($sortBy, $sort)
             ->paginate($limit);
 
         return response()->json([

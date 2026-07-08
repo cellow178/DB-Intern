@@ -22,7 +22,7 @@ class NewsController extends Controller
         $status      = $request->query('status');
         $isHighlight = $request->query('is_highlight');
 
-        $allowedSorts = ['id', 'title', 'status'];
+        $allowedSorts = ['id', 'title', 'status', 'updated_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
         }
