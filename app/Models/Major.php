@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Major extends Model
 {
@@ -25,6 +26,11 @@ class Major extends Model
     protected $casts = [
         'active' => 'boolean'
     ];
+
+    public function competent(): HasMany
+    {
+        return $this->hasMany(MajorCompetent::class, 'category_id');
+    }
 
     public function createdBy()
     {

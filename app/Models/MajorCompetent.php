@@ -4,25 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class News extends Model
+class MajorCompetent extends Model
 {
-    protected $table = 'news';
+    protected $table = 'major_competent';
 
     protected $fillable = [
-        'category_id',
-        'slug',
-        'title',
-        'content',
-        'img_cover',
-        'status',
-        'is_highlight',
+        'major_id',
+        'competent_name',
+        'description',
         'created_by',
-        'updated_by',
+        'updated_by'
     ];
 
-    public function category()
+    public function major()
     {
-        return $this->belongsTo(NewsCategory::class, 'category_id');
+        return $this->belongsTo(Major::class);
     }
 
     public function createdBy()
