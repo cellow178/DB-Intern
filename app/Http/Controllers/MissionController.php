@@ -13,20 +13,20 @@ class MissionController extends Controller
     // GET Mission list
     public function index(Request $request)
     {
-        $search      = $request->query('search');
-        $limit       = $request->query('limit', 10);
-        $sortBy      = $request->query('sort_by', 'id');
-        $sort        = $request->query('sort', 'asc');
-        $statusCode  = $request->query('status_code');
+        $search     = $request->query('search');
+        $limit      = $request->query('limit', 10);
+        $sortBy     = $request->query('sort_by', 'id');
+        $sort       = $request->query('sort', 'asc');
+        $active     = $request->query('active');
 
-        $allowedSorts = ['id', 'title', 'status_code', 'updated_at'];
+        $allowedSorts = ['id', 'title', 'updated_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
         }
 
         $mission = Mission::with(['createdBy', 'updatedBy'])
-            ->when($statusCode !== null, function ($query) use ($statusCode) {
-                $query->where('status_code', filter_var($statusCode, FILTER_VALIDATE_BOOLEAN));
+            ->when($active !== null, function ($query) use ($active) {
+                $query->where('status_code', filter_var($active, FILTER_VALIDATE_BOOLEAN));
             })
             ->when($search, function ($query) use ($search) {
                 $query->where('content', 'ilike', "%{$search}%");
@@ -56,13 +56,13 @@ class MissionController extends Controller
     {
         $search = $request->query('search');
         $limit = $request->query('limit', 10);
-        $statusCode = $request->query('status_code');
+        $active = $request->query('status_code');
 
         $mission = Mission::select('id', 'content')
             ->when($search, function ($query) use ($search) {
                 $query->where('content', 'ilike', "%{$search}%");
             })
-            ->when($statusCode, function ($query) use ($request) {
+            ->when($active, function ($query) use ($request) {
                 $query->where('status_code', filter_var($request->query('status_code'), FILTER_VALIDATE_BOOLEAN));
             })
             ->orderBy('order', 'asc')

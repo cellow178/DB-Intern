@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\NewsCategories;
+use App\Models\NewsCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 
-class NewsCategoriesController extends Controller
+class NewsCategoryController extends Controller
 {
     // GET News Category list
     public function index(Request $request)
@@ -36,7 +36,7 @@ class NewsCategoriesController extends Controller
         }
 
         // Query untuk mengambil data kategori berita dengan relasi createdBy dan updatedBy
-        $categories = NewsCategories::with(['createdBy', 'updatedBy'])
+        $categories = NewsCategory::with(['createdBy', 'updatedBy'])
             ->when($search, function ($query) use ($search) {
                 $query->where('name', 'ilike', "%{$search}%")
                     ->orWhere('description', 'ilike', "%{$search}%");
@@ -68,7 +68,7 @@ class NewsCategoriesController extends Controller
         $search = $request->query('search');
 
         // Query untuk mengambil data kategori berita yang aktif dengan filter pencarian
-        $categories = NewsCategories::select('id', 'name')
+        $categories = NewsCategory::select('id', 'name')
             ->where('active', true)
             ->when($search, function ($query) use ($search) {
                 $query->where('name', 'ilike', "%{$search}%");
@@ -92,7 +92,7 @@ class NewsCategoriesController extends Controller
     public function show(int $id)
     {
         // Cari kategori berdasarkan ID dengan relasi createdBy dan updatedBy
-        $category = NewsCategories::with(['createdBy', 'updatedBy'])->find($id);
+        $category = NewsCategory::with(['createdBy', 'updatedBy'])->find($id);
 
         if (!$category) {
             return response()->json([
@@ -140,7 +140,7 @@ class NewsCategoriesController extends Controller
         }
 
         // Buat kategori baru
-        $category = NewsCategories::create([
+        $category = NewsCategory::create([
             'name'        => $validated['name'],
             'description' => $validated['description'] ?? null,
             'active'      => $validated['active'] ?? true,
@@ -197,7 +197,7 @@ class NewsCategoriesController extends Controller
         }
 
         // Cari kategori berdasarkan ID
-        $category = NewsCategories::find($validated['id']);
+        $category = NewsCategory::find($validated['id']);
 
         $category->update([
             'name'        => $validated['name'] ?? $category->name,
@@ -249,7 +249,7 @@ class NewsCategoriesController extends Controller
         }
 
         // Cari kategori berdasarkan ID
-        $category = NewsCategories ::find($validated['id']);
+        $category = NewsCategory ::find($validated['id']);
 
         // Jika kategori memiliki berita terkait, set category_id menjadi null
         if ($category->news()->exists()) {

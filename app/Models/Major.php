@@ -17,13 +17,13 @@ class Major extends Model
         'total_classes',
         'major_duration',
         'full_description',
-        'status_code',
+        'active',
         'created_by',
         'updated_by'
     ];
 
     protected $casts = [
-        'status_code' => 'boolean'
+        'active' => 'boolean'
     ];
 
     public function createdBy()

@@ -14,20 +14,20 @@ class MajorController extends Controller
     // GET major list
     public function index(Request $request)
     {
-        $search      = $request->query('search');
-        $limit       = $request->query('limit', 10);
-        $sortBy      = $request->query('sort_by', 'id');
-        $sort        = $request->query('sort', 'asc');
-        $statusCode  = $request->query('status_code');
+        $search     = $request->query('search');
+        $limit      = $request->query('limit', 10);
+        $sortBy     = $request->query('sort_by', 'id');
+        $sort       = $request->query('sort', 'asc');
+        $active     = $request->query('active');
 
-        $allowedSorts = ['id', 'code', 'major_name', 'status_code', 'updated_at'];
+        $allowedSorts = ['id', 'code', 'major_name', 'updated_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
         }
 
         $major = Major::with(['createdBy', 'updatedBy'])
-            ->when($statusCode !== null, function ($query) use ($statusCode) {
-                $query->where('status_code', filter_var($statusCode, FILTER_VALIDATE_BOOLEAN));
+            ->when($active !== null, function ($query) use ($active) {
+                $query->where('status_code', filter_var($active, FILTER_VALIDATE_BOOLEAN));
             })
             ->when($search, function ($query) use ($search) {
                 $query->where('code', 'ilike', "%{$search}%")
@@ -62,14 +62,14 @@ class MajorController extends Controller
     {
         $search = $request->query('search');
         $limit = $request->query('limit', 10);
-        $statusCode = $request->query('status_code');
+        $active = $request->query('status_code');
 
         $major = Major::select('id', 'code', 'major_name')
             ->when($search, function ($query) use ($search) {
                 $query->where('code', 'ilike', "%{$search}%")
                     ->orWhere('major_name', 'ilike', "%{$search}%");
             })
-            ->when($statusCode, function ($query) use ($request) {
+            ->when($active, function ($query) use ($request) {
                 $query->where('status_code', filter_var($request->query('status_code'), FILTER_VALIDATE_BOOLEAN));
             })
             ->orderBy('code', 'asc')
@@ -259,7 +259,7 @@ class MajorController extends Controller
         ]);
 
         $major->load(['createdBy', 'updatedBy']);
-        $majorName = $major->major_name;        
+        $majorName = $major->major_name;
 
         return response()->json([
             'success'   => true,
@@ -300,9 +300,9 @@ class MajorController extends Controller
                 'errors'  => $e->errors()
             ], 422);
         }
-        
+
         $major = Major::find($validated['id']);
-        $majorName = $major->major_name;        
+        $majorName = $major->major_name;
 
         $major->update([
             'status_code'   => !$major->status_code,

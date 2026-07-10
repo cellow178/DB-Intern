@@ -8,13 +8,13 @@
         protected $fillable = [
             'content',
             'order',
-            'status_code',
+            'active',
             'created_by',
             'updated_by'
         ];
 
         protected $casts = [
-            'status_code' => 'boolean',
+            'active' => 'boolean',
         ];
 
         public function createdBy()

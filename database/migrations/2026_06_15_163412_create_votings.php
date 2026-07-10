@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('description');
             $table->date('start_date');
             $table->date('end_date');
-            $table->boolean('status_code')->default(true);
+            $table->boolean('active')->default(true);
             $table->boolean('is_highlight')->default(false);
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');

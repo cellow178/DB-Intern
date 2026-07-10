@@ -7,8 +7,8 @@ use App\Http\Controllers\UploadController;
 use App\Http\Controllers\MissionController;
 use App\Http\Controllers\MajorController;
 use App\Http\Controllers\NewsController;
-use App\Http\Controllers\NewsCategoriesController;
-use App\Http\Controllers\FeedbacksCategoriesController;
+use App\Http\Controllers\NewsCategoryController;
+use App\Http\Controllers\FeedbackCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -54,20 +54,20 @@ Route::group([
     Route::delete('/news/delete/', [NewsController::class, 'destroy']);
 
     // News Category
-    Route::get('/news-categories', [NewsCategoriesController::class, 'index']);
-    Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
-    Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show']);
-    Route::post('/news-categories/create', [NewsCategoriesController::class, 'create']);
-    Route::put('/news-categories/update/', [NewsCategoriesController::class, 'update']);
-    Route::delete('/news-categories/delete/', [NewsCategoriesController::class, 'destroy']);
+    Route::get('/news-categories', [NewsCategoryController::class, 'index']);
+    Route::get('/news-categories/dataset', [NewsCategoryController::class, 'dataset']);
+    Route::get('/news-categories/{id}', [NewsCategoryController::class, 'show']);
+    Route::post('/news-categories/create', [NewsCategoryController::class, 'create']);
+    Route::put('/news-categories/update/', [NewsCategoryController::class, 'update']);
+    Route::delete('/news-categories/delete/', [NewsCategoryController::class, 'destroy']);
 
     // Feedbacks Category
-    Route::get('/feedbacks-categories', [FeedbacksCategoriesController::class, 'index']);
-    Route::get('/feedbacks-categories/dataset', [FeedbacksCategoriesController::class, 'dataset']);
-    Route::get('/feedbacks-categories/{id}', [FeedbacksCategoriesController::class, 'show']);
-    Route::post('/feedbacks-categories/create', [FeedbacksCategoriesController::class, 'create']);
-    Route::put('/feedbacks-categories/update/', [FeedbacksCategoriesController::class, 'update']);
-    Route::delete('/feedbacks-categories/delete/', [FeedbacksCategoriesController::class, 'destroy']);
+    Route::get('/feedbacks-categories', [FeedbackCategoryController::class, 'index']);
+    Route::get('/feedbacks-categories/dataset', [FeedbackCategoryController::class, 'dataset']);
+    Route::get('/feedbacks-categories/{id}', [FeedbackCategoryController::class, 'show']);
+    Route::post('/feedbacks-categories/create', [FeedbackCategoryController::class, 'create']);
+    Route::put('/feedbacks-categories/update/', [FeedbackCategoryController::class, 'update']);
+    Route::delete('/feedbacks-categories/delete/', [FeedbackCategoryController::class, 'destroy']);
 
     // Global Config
     Route::get('/global-config/show', [App\Http\Controllers\GlobalConfigController::class, 'show']);

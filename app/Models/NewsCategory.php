@@ -3,20 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class FeedbacksCategories extends Model
+class NewsCategory extends Model
 {
-    protected $table = 'feedbacks_categories';
+    protected $table = 'news_categories';
 
     protected $fillable = [
-        'category_name',
-        'status',
+        'name',
+        'description',
+        'active',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
-    
+
     protected $casts = [
-        'status' => 'boolean',
+        'active' => 'boolean',
     ];
 
     public function createdBy()
@@ -27,5 +29,10 @@ class FeedbacksCategories extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function news(): HasMany
+    {
+        return $this->hasMany(News::class, 'category_id');
     }
 }
