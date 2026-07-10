@@ -4,7 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CrudController;
 // use App\Http\Controllers\CustomController;
 use App\Http\Controllers\UploadController;
-use App\Http\Controllers\MissionsController;
+use App\Http\Controllers\MissionController;
+use App\Http\Controllers\MajorController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsCategoriesController;
 use App\Http\Controllers\FeedbacksCategoriesController;
@@ -26,16 +27,25 @@ Route::group([
 ], function () {
 
     // Missions
-    Route::get('/missions/list', [MissionsController::class, 'index']);
-    Route::get('/missions/dataset', [MissionsController::class, 'dataset']);
-    Route::get('/missions/{id}', [MissionsController::class, 'show']);
-    Route::post('/missions/create', [MissionsController::class, 'create']);
-    Route::put('/missions/update/', [MissionsController::class, 'update']);
-    Route::post('/missions/update-status/', [MissionsController::class, 'updateStatus']);
-    Route::delete('/missions/delete/', [MissionsController::class, 'destroy']);
+    Route::get('/missions', [MissionController::class, 'index']);
+    Route::get('/missions/dataset', [MissionController::class, 'dataset']);
+    Route::get('/missions/{id}', [MissionController::class, 'show']);
+    Route::post('/missions/create', [MissionController::class, 'create']);
+    Route::put('/missions/update/', [MissionController::class, 'update']);
+    Route::post('/missions/update-status/', [MissionController::class, 'updateStatus']);
+    Route::delete('/missions/delete/', [MissionController::class, 'destroy']);
 
+    // Majors
+    Route::get('/majors', [MajorController::class, 'index']);
+    Route::get('/majors/dataset', [MajorController::class, 'dataset']);
+    Route::get('/majors/{id}', [MajorController::class, 'show']);
+    Route::post('/majors/create', [MajorController::class, 'create']);
+    Route::put('/majors/update/', [MajorController::class, 'update']);
+    Route::post('/majors/update-status/', [MajorController::class, 'updateStatus']);
+    Route::delete('/majors/delete/', [MajorController::class, 'destroy']);
+    
     // News
-    Route::get('/news/list', [NewsController::class, 'index']);
+    Route::get('/news', [NewsController::class, 'index']);
     Route::get('/news/dataset', [NewsController::class, 'dataset']);
     Route::get('/news/{id}', [NewsController::class, 'show']);
     Route::post('/news/create', [NewsController::class, 'create']);
@@ -44,7 +54,7 @@ Route::group([
     Route::delete('/news/delete/', [NewsController::class, 'destroy']);
 
     // News Category
-    Route::get('/news-categories/list', [NewsCategoriesController::class, 'index']);
+    Route::get('/news-categories', [NewsCategoriesController::class, 'index']);
     Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
     Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show']);
     Route::post('/news-categories/create', [NewsCategoriesController::class, 'create']);
@@ -52,7 +62,7 @@ Route::group([
     Route::delete('/news-categories/delete/', [NewsCategoriesController::class, 'destroy']);
 
     // Feedbacks Category
-    Route::get('/feedbacks-categories/list', [FeedbacksCategoriesController::class, 'index']);
+    Route::get('/feedbacks-categories', [FeedbacksCategoriesController::class, 'index']);
     Route::get('/feedbacks-categories/dataset', [FeedbacksCategoriesController::class, 'dataset']);
     Route::get('/feedbacks-categories/{id}', [FeedbacksCategoriesController::class, 'show']);
     Route::post('/feedbacks-categories/create', [FeedbacksCategoriesController::class, 'create']);

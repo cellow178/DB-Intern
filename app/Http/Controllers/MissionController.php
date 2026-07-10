@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 
-class MissionsController extends Controller
+class MissionController extends Controller
 {
     // GET Mission list
     public function index(Request $request)
@@ -17,14 +17,14 @@ class MissionsController extends Controller
         $limit       = $request->query('limit', 10);
         $sortBy      = $request->query('sort_by', 'id');
         $sort        = $request->query('sort', 'asc');
-        $statusCode = $request->query('status_code');
+        $statusCode  = $request->query('status_code');
 
         $allowedSorts = ['id', 'title', 'status_code', 'updated_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
         }
 
-        $missions = Mission::with(['createdBy', 'updatedBy'])
+        $mission = Mission::with(['createdBy', 'updatedBy'])
             ->when($statusCode !== null, function ($query) use ($statusCode) {
                 $query->where('status_code', filter_var($statusCode, FILTER_VALIDATE_BOOLEAN));
             })
@@ -36,9 +36,9 @@ class MissionsController extends Controller
 
         return response()->json([
             'success'   => true,
-            'total'     => $missions->total(),
-            'totalPage' => $missions->lastPage(),
-            'data'      => $missions->through(function ($item) {
+            'total'     => $mission->total(),
+            'totalPage' => $mission->lastPage(),
+            'data'      => $mission->through(function ($item) {
                 return [
                     'id'                  => $item->id,
                     'content'             => $item->content,
@@ -56,12 +56,13 @@ class MissionsController extends Controller
     {
         $search = $request->query('search');
         $limit = $request->query('limit', 10);
+        $statusCode = $request->query('status_code');
 
-        $missions = Mission::select('id', 'content')
+        $mission = Mission::select('id', 'content')
             ->when($search, function ($query) use ($search) {
                 $query->where('content', 'ilike', "%{$search}%");
             })
-            ->when($request->query('status_code') !== null, function ($query) use ($request) {
+            ->when($statusCode, function ($query) use ($request) {
                 $query->where('status_code', filter_var($request->query('status_code'), FILTER_VALIDATE_BOOLEAN));
             })
             ->orderBy('order', 'asc')
@@ -70,8 +71,8 @@ class MissionsController extends Controller
 
         return response()->json([
             'success' => true,
-            'total'   => $missions->count(),
-            'data'    => $missions,
+            'total'   => $mission->count(),
+            'data'    => $mission,
         ]);
     }
 
@@ -83,7 +84,7 @@ class MissionsController extends Controller
         if (!$mission) {
             return response()->json([
                 'success' => false,
-                'message' => 'Misi tidak ditemukan.',
+                'message' => 'Misi tidak ditemukan.'
             ], 404);
         }
 
@@ -135,7 +136,8 @@ class MissionsController extends Controller
         $mission->load(['createdBy', 'updatedBy']);
 
         return response()->json([
-            'success' => true,
+            'success'   => true,
+            'message'   => "Misi berhasil dibuat.",
             'data'    => [
                 'id'                  => $mission->id,
                 'content'             => $mission->content,
@@ -179,30 +181,30 @@ class MissionsController extends Controller
             ], 422);
         }
 
-            $mission = Mission::find($validated['id']);
+        $mission = Mission::find($validated['id']);
 
-            $mission->update([
-                'content'    => $validated['content'] ?? $mission->content,
-                'order'      => $validated['order'] ?? $mission->order,
-                'updated_by' => Auth::id(),
-            ]);
+        $mission->update([
+            'content'    => $validated['content'] ?? $mission->content,
+            'order'      => $validated['order'] ?? $mission->order,
+            'updated_by' => Auth::id(),
+        ]);
 
-            $mission->load(['createdBy', 'updatedBy']);
+        $mission->load(['createdBy', 'updatedBy']);
 
-            return response()->json([
-                'success' => true,
-                'message' => "Misi berhasil diperbarui.",
-                'data'    => [
-                    'id'                  => $mission->id,
-                    'content'             => $mission->content,
-                    'order'               => $mission->order,
-                    'status_code'         => $mission->status_code,
-                    'created_by_fullname' => $mission->createdBy?->fullname,
-                    'created_at'          => $mission->created_at?->format('Y-m-d H:i:s'),
-                    'updated_by_fullname' => $mission->updatedBy?->fullname,
-                    'updated_at'          => $mission->updated_at?->format('Y-m-d H:i:s'),
-                ],
-            ]);
+        return response()->json([
+            'success' => true,
+            'message' => "Misi berhasil diperbarui.",
+            'data'    => [
+                'id'                  => $mission->id,
+                'content'             => $mission->content,
+                'order'               => $mission->order,
+                'status_code'         => $mission->status_code,
+                'created_by_fullname' => $mission->createdBy?->fullname,
+                'created_at'          => $mission->created_at?->format('Y-m-d H:i:s'),
+                'updated_by_fullname' => $mission->updatedBy?->fullname,
+                'updated_at'          => $mission->updated_at?->format('Y-m-d H:i:s'),
+            ],
+        ]);
     }
 
     // POST Toggle status (aktif/nonaktif)
@@ -228,16 +230,17 @@ class MissionsController extends Controller
 
         $mission->update([
             'status_code' => !$mission->status_code,
-            'updated_by'  => Auth::id(),
+            'updated_by'  => Auth::id()
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Status misi berhasil diperbarui.',
             'data'    => [
-                'id'          => $mission->id,
-                'status_code' => $mission->status_code,
-            ],
+                'id'            => $mission->id,
+                'content'       => $mission->content,
+                'status_code'   => $mission->status_code
+            ]
         ]);
     }
 
@@ -261,11 +264,12 @@ class MissionsController extends Controller
         }
 
         $mission = Mission::find($validated['id']);
+        $content = $mission->content;
         $mission->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Misi berhasil dihapus.',
+            'message' => "Misi '$content' berhasil dihapus.",
         ]);
     }
 }
