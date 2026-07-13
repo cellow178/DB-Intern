@@ -9,6 +9,7 @@ use App\Http\Controllers\MajorController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsCategoryController;
 use App\Http\Controllers\FeedbackCategoryController;
+use App\Http\Controllers\MajorCompetentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
@@ -43,7 +45,13 @@ Route::group([
     Route::put('/majors/update/', [MajorController::class, 'update']);
     Route::post('/majors/update-status/', [MajorController::class, 'updateStatus']);
     Route::delete('/majors/delete/', [MajorController::class, 'destroy']);
-    
+
+    // Major Competents
+    Route::get('/major-competents', [MajorCompetentController::class, 'index']);
+    Route::post('/major-competents/create', [MajorCompetentController::class, 'create']);
+    Route::put('/major-competents/update', [MajorCompetentController::class, 'update']);
+    Route::delete('/major-competents/delete/', [MajorCompetentController::class, 'destroy']);
+
     // News
     Route::get('/news', [NewsController::class, 'index']);
     Route::get('/news/dataset', [NewsController::class, 'dataset']);
@@ -97,6 +105,6 @@ Route::group([
     Route::get('tumb-file/{model}/{field}/{id}/{time}', [UploadController::class, 'getTumbnailFile']);
     Route::get('temp-file/{path}/{time}/{ext}', [UploadController::class, 'getTempFile']);
     Route::get('tumb-temp-file/{path}/{time}/{ext}', [UploadController::class, 'getThumbTempFile']);
-    
+
     Route::post('upload', [UploadController::class, 'upload'])->name("upload");
 });
