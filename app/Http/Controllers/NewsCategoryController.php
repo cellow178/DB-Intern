@@ -174,19 +174,20 @@ class NewsCategoryController extends Controller
             $validated = $request->validate([
                 'id'          => ['required', 'integer', 'exists:news_categories,id'],
                 'name'        => [
-                    'sometimes', 'required', 'string', 'min:3',
+                    'required', 'string', 'min:3',
                     // Mengecualikan nama kategori yang sedang diupdate dari validasi unik
                     Rule::unique('news_categories', 'name')->ignore($request->input('id')),
                 ],
-                'description' => ['sometimes', 'nullable', 'string'],
-                'active'      => ['sometimes', 'boolean'],
+                'description' => ['nullable', 'string'],
+                'active'      => ['required', 'boolean'],
             ], [
-                'id.required'    => 'ID kategori wajib diisi.',
-                'id.exists'      => 'Kategori tidak ditemukan.',
-                'name.required'  => 'Nama kategori wajib diisi.',
-                'name.min'       => 'Nama kategori minimal 3 karakter.',
-                'name.unique'    => 'Nama kategori sudah digunakan.',
-                'active.boolean' => 'Status aktif harus berupa true atau false.',
+                'id.required'       => 'ID kategori wajib diisi.',
+                'id.exists'         => 'Kategori tidak ditemukan.',
+                'name.required'     => 'Nama kategori wajib diisi.',
+                'name.min'          => 'Nama kategori minimal 3 karakter.',
+                'name.unique'       => 'Nama kategori sudah digunakan.',
+                'active.required'   => 'Active wajib dicantumkan.',
+                'active.boolean'    => 'Active harus berupa true atau false.'
             ]);
         } catch (ValidationException $e) {
             return response()->json([

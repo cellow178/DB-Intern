@@ -27,7 +27,7 @@ class MajorController extends Controller
 
         $major = Major::with(['createdBy', 'updatedBy'])
             ->when($active !== null, function ($query) use ($active) {
-                $query->where('status_code', filter_var($active, FILTER_VALIDATE_BOOLEAN));
+                $query->where('active', filter_var($active, FILTER_VALIDATE_BOOLEAN));
             })
             ->when($search, function ($query) use ($search) {
                 $query->where('code', 'ilike', "%{$search}%")
@@ -49,7 +49,7 @@ class MajorController extends Controller
                     'summary'        => $item->summary,
                     'total_classes'  => $item->total_classes,
                     'major_duration' => $item->major_duration,
-                    'status_code'    => $item->status_code,
+                    'active'         => $item->active,
                     'created_by'     => $item->createdBy?->fullname,
                     'updated_by'     => $item->updatedBy?->fullname
                 ];
@@ -62,7 +62,7 @@ class MajorController extends Controller
     {
         $search = $request->query('search');
         $limit = $request->query('limit', 10);
-        $active = $request->query('status_code');
+        $active = $request->query('active');
 
         $major = Major::select('id', 'code', 'major_name')
             ->when($search, function ($query) use ($search) {
@@ -70,7 +70,7 @@ class MajorController extends Controller
                     ->orWhere('major_name', 'ilike', "%{$search}%");
             })
             ->when($active, function ($query) use ($request) {
-                $query->where('status_code', filter_var($request->query('status_code'), FILTER_VALIDATE_BOOLEAN));
+                $query->where('active', filter_var($request->query('active'), FILTER_VALIDATE_BOOLEAN));
             })
             ->orderBy('code', 'asc')
             ->limit($limit)
@@ -107,7 +107,7 @@ class MajorController extends Controller
                 'total_classes'         => $major->total_classes,
                 'major_duration'        => $major->major_duration,
                 'full_description'      => $major->full_description,
-                'status_code'           => $major->status_code,
+                'active'                => $major->active,
                 'created_by_fullname'   => $major->createdBy?->fullname,
                 'created_at'            => $major->created_at?->format('Y-m-d H:i:s'),
                 'updated_by_fullname'   => $major->updatedBy?->fullname,
@@ -166,7 +166,7 @@ class MajorController extends Controller
             'total_classes'     => $validated['total_classes'],
             'major_duration'    => $validated['major_duration'],
             'full_description'  => $validated['full_description'],
-            'status_code'       => true,
+            'active'            => true,
             'created_by'        => Auth::id(),
             'updated_by'        => Auth::id()
         ]);
@@ -187,7 +187,7 @@ class MajorController extends Controller
                 'total_classes'       => $major->total_classes,
                 'major_duration'      => $major->major_duration,
                 'full_description'    => $major->full_description,
-                'status_code'         => $major->status_code,
+                'active'              => $major->active,
                 'created_by_fullname' => $major->createdBy?->fullname,
                 'created_at'          => $major->created_at?->format('Y-m-d H:i:s'),
                 'updated_by_fullname' => $major->updatedBy?->fullname,
@@ -201,7 +201,7 @@ class MajorController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id'                => ['required', 'integer', 'exists:Major,id'],
+                'id'                => ['required', 'integer', 'exists:majors,id'],
                 'img_logo'          => ['required', 'string'],
                 'code'              => ['required', 'string', 'max:10'],
                 'major_name'        => ['required', 'string', 'max:100'],
@@ -273,7 +273,7 @@ class MajorController extends Controller
                 'total_classes'         => $major->total_classes,
                 'major_duration'        => $major->major_duration,
                 'full_description'      => $major->full_description,
-                'status_code'           => $major->status_code,
+                'active'                => $major->active,
                 'created_by_fullname'   => $major->createdBy->fullname,
                 'created_at'            => $major->created_at?->format('Y-m-d H:i:s'),
                 'updated_by_fullname'   => $major->updatedBy->fullname,
@@ -287,7 +287,7 @@ class MajorController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id' => ['required', 'integer', 'exists:Major,id'],
+                'id' => ['required', 'integer', 'exists:majors,id'],
             ], [
                 'id.required' => 'ID jurusan wajib diisi.',
                 'id.integer'  => 'ID jurusan harus berupa angka.',
@@ -305,7 +305,7 @@ class MajorController extends Controller
         $majorName = $major->major_name;
 
         $major->update([
-            'status_code'   => !$major->status_code,
+            'active'        => !$major->active,
             'updated_by'    => Auth::id()
         ]);
 
@@ -316,7 +316,7 @@ class MajorController extends Controller
                 'id'            => $major->id,
                 'code'          => $major->code,
                 'major_name'    => $majorName,
-                'status_code'   => $major->status_code
+                'active'        => $major->active
             ]
         ]);
     }
@@ -326,7 +326,7 @@ class MajorController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id' => ['required', 'integer', 'exists:Major,id'],
+                'id' => ['required', 'integer', 'exists:majors,id'],
             ], [
                 'id.required' => 'ID jurusan wajib diisi.',
                 'id.integer'  => 'ID jurusan harus berupa angka.',

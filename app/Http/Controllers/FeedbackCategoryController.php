@@ -165,12 +165,13 @@ class FeedbackCategoryController extends Controller
                 ],
                 'active' => ['required', 'boolean'],
             ], [
-                'id.required'             => 'ID kategori wajib diisi.',
-                'id.exists'               => 'Kategori feedback tidak ditemukan.',
-                'category_name.required'  => 'Nama kategori wajib diisi.',
-                'category_name.max'       => 'Nama kategori maksimal 100 karakter.',
-                'category_name.unique'    => 'Nama kategori sudah digunakan.',
-                'active.boolean'          => 'active harus berupa true atau false.',
+                'id.required'               => 'ID kategori wajib diisi.',
+                'id.exists'                 => 'Kategori feedback tidak ditemukan.',
+                'category_name.required'    => 'Nama kategori wajib diisi.',
+                'category_name.max'         => 'Nama kategori maksimal 100 karakter.',
+                'category_name.unique'      => 'Nama kategori sudah digunakan.',
+                'active.required'           => 'Active wajib dicantumkan.',
+                'active.boolean'            => 'Active harus berupa true atau false.',
             ]);
         } catch (ValidationException $e) {
             return response()->json([

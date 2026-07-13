@@ -229,7 +229,7 @@ class MissionController extends Controller
         $mission = Mission::find($validated['id']);
 
         $mission->update([
-            'status_code' => !$mission->status_code,
+            'active' => !$mission->active,
             'updated_by'  => Auth::id()
         ]);
 
@@ -239,7 +239,7 @@ class MissionController extends Controller
             'data'    => [
                 'id'            => $mission->id,
                 'content'       => $mission->content,
-                'status_code'   => $mission->status_code
+                'active'        => $mission->active
             ]
         ]);
     }
