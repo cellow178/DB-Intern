@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CrudController;
 // use App\Http\Controllers\CustomController;
 use App\Http\Controllers\UploadController;
@@ -27,6 +28,13 @@ use Illuminate\Support\Facades\Route;
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
+
+    // Banners
+    Route::get('/banners', [BannerController::class, 'index']);
+    Route::get('/banners/{id}', [BannerController::class, 'show']);
+    Route::post('/banners/create', [BannerController::class, 'create']);
+    Route::put('/banners/update', [BannerController::class, 'update']);
+    Route::delete('/banners/delete', [BannerController::class, 'destroy']);
 
     // Missions
     Route::get('/missions', [MissionController::class, 'index']);
