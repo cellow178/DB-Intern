@@ -64,8 +64,8 @@ class NewsController extends Controller
             ->when($status, function ($query) use ($status) {
                 $query->where('status', $status);
             })
-            ->when($isHighlight, function ($query) use ($isHighlight) {
-                $query->where('is_highlight', $isHighlight);
+            ->when($isHighlight !== null, function ($query) use ($isHighlight) {
+                $query->where('is_highlight', filter_var($isHighlight, FILTER_VALIDATE_BOOLEAN));
             })
             ->when($search, function ($query) use ($search) {
                 $query->where('title', 'ilike', "%{$search}%")
@@ -105,7 +105,10 @@ class NewsController extends Controller
         $limit      = $request->query('limit', 20);
 
         $news = News::select('id', 'title', 'slug', 'status', 'category_id')
-            ->where('title', 'ilike', "%{$search}%")
+            ->with('category')
+            ->when($search, function ($query) use ($search) {
+                $query->where('title', 'ilike', "%{$search}%");
+            })
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
             })
@@ -125,7 +128,8 @@ class NewsController extends Controller
                     'title'       => $item->title,
                     'slug'        => $item->slug,
                     'status'      => $item->status,
-                    'category_id' => $item->category?->name,
+                    'category_id' => $item->category,
+                    'category'    => $item->category?->name
                 ];
             }),
         ]);
@@ -176,6 +180,7 @@ class NewsController extends Controller
                 ],
                 'title'       => ['required', 'string', 'min:10'],
                 'content'     => ['required', 'string'],
+                'img_cover'   => ['nullable', 'string'],
                 'status'      => ['nullable', 'in:draft,publish'],
             ], [
                 'category_id.required' => 'Kategori berita wajib diisi.',
@@ -209,6 +214,7 @@ class NewsController extends Controller
             'title'        => $validated['title'],
             'slug'         => $slug,
             'content'      => $validated['content'],
+            'img_cover'    => $validated['img_cover'] ?? null,
             'status'       => $validated['status'] ?? 'draft',
             'is_highlight' => false,
             'created_by'   => Auth::id(),
@@ -251,6 +257,7 @@ class NewsController extends Controller
                 ],
                 'title'       => ['required', 'string', 'min:10'],
                 'content'     => ['required', 'string'],
+                'img_cover'   => ['nullable', 'string'],
                 'status'      => ['nullable', 'in:publish,draft'],
             ], [
                 'id.required'           => 'ID berita wajib diisi.',
@@ -290,6 +297,7 @@ class NewsController extends Controller
             'title'       => $validated['title'] ?? $news->title,
             'slug'        => $validated['slug'] ?? $news->slug,
             'content'     => $validated['content'] ?? $news->content,
+            'img_cover'   => array_key_exists('img_cover', $validated) ? $validated['img_cover'] : $news->img_cover,
             'status'      => $validated['status'] ?? $news->status,
             'updated_by'  => Auth::id(),
         ]);
@@ -371,7 +379,7 @@ class NewsController extends Controller
                 'slug'                => $news->slug,
                 'title'               => $news->title,
                 'category_id'         => $news->category_id,
-                'category_id_name'    => $news->category?->name,
+                'category'            => $news->category?->name,
                 'content'             => $news->content,
                 'img_cover'           => $news->img_cover,
                 'status'              => $news->status,
