@@ -10,6 +10,7 @@ use App\Http\Controllers\MajorController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsCategoryController;
 use App\Http\Controllers\FeedbackCategoryController;
+use App\Http\Controllers\GlobalConfigController;
 use App\Http\Controllers\MajorCompetentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,11 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::get('/no-auth/global-config', [GlobalConfigController::class, 'public']);
+Route::get('/no-auth/banners', [BannerController::class, 'public']);
+Route::get('/no-auth/majors', [MajorController::class, 'public']);
+Route::get('/no-auth/news', [NewsController::class, 'public']);
 
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']

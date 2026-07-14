@@ -11,6 +11,21 @@ use Illuminate\Support\Str;
 
 class MajorController extends Controller
 {
+
+    // GET Majors aktif untuk publik (no-auth) — buat landing page
+    public function public()
+    {
+        $majors = Major::where('active', true)
+            ->orderBy('major_name', 'asc')
+            ->get(['id', 'slug', 'img_logo', 'code', 'major_name', 'summary']);
+
+        return response()->json([
+            'success' => true,
+            'total'   => $majors->count(),
+            'data'    => $majors,
+        ]);
+    }
+
     // GET major list
     public function index(Request $request)
     {
