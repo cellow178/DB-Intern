@@ -149,7 +149,9 @@ class BannerController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id'        => ['required', 'integer', 'exists:banners,id'],
+                'id'        => [
+                    'required', 'integer', 
+                    Rule::exists('banners','id')],
                 'title'     => ['nullable', 'string', 'max:255'],
                 'img_cover' => ['sometimes', 'required', 'string'],
                 'url'       => ['nullable', 'string', 'max:2048'],
