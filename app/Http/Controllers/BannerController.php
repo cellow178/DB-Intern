@@ -10,21 +10,6 @@ use Illuminate\Validation\Rule;
 
 class BannerController extends Controller
 {
-
-    // GET Banner aktif untuk publik (no-auth)
-    public function public()
-    {
-        $banners = Banner::where('active', true)
-            ->orderBy('created_at', 'desc')
-            ->get(['id', 'title', 'img_cover', 'url']);
-
-        return response()->json([
-            'success' => true,
-            'total'   => $banners->count(),
-            'data'    => $banners,
-        ]);
-    }
-
     // GET Banner list
     public function index(Request $request)
     {

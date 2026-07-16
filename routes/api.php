@@ -12,6 +12,7 @@ use App\Http\Controllers\NewsCategoryController;
 use App\Http\Controllers\FeedbackCategoryController;
 use App\Http\Controllers\GlobalConfigController;
 use App\Http\Controllers\MajorCompetentController;
+use App\Http\Controllers\PublicController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,10 +27,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/no-auth/global-config', [GlobalConfigController::class, 'public']);
-Route::get('/no-auth/banners', [BannerController::class, 'public']);
-Route::get('/no-auth/majors', [MajorController::class, 'public']);
-Route::get('/no-auth/news', [NewsController::class, 'public']);
+Route::get('/no-auth/global-config', [PublicController::class, 'globalConfig']);
+Route::get('/no-auth/banners', [PublicController::class, 'banner']);
+Route::get('/no-auth/vision-mission', [PublicController::class, 'visionMission']);
+Route::get('/no-auth/majors', [PublicController::class, 'majorCard']);
+Route::get('/no-auth/news', [PublicController::class, 'news']);
 
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']

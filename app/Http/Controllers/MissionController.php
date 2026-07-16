@@ -26,7 +26,7 @@ class MissionController extends Controller
 
         $mission = Mission::with(['createdBy', 'updatedBy'])
             ->when($active !== null, function ($query) use ($active) {
-                $query->where('status_code', filter_var($active, FILTER_VALIDATE_BOOLEAN));
+                $query->where('active', filter_var($active, FILTER_VALIDATE_BOOLEAN));
             })
             ->when($search, function ($query) use ($search) {
                 $query->where('content', 'ilike', "%{$search}%");
@@ -43,7 +43,7 @@ class MissionController extends Controller
                     'id'                  => $item->id,
                     'content'             => $item->content,
                     'order'               => $item->order,
-                    'status_code'         => $item->status_code,
+                    'active'         => $item->active,
                     'created_by_fullname' => $item->createdBy?->fullname,
                     'updated_by_fullname' => $item->updatedBy?->fullname,
                 ];
@@ -56,14 +56,14 @@ class MissionController extends Controller
     {
         $search = $request->query('search');
         $limit = $request->query('limit', 10);
-        $active = $request->query('status_code');
+        $active = $request->query('active');
 
         $mission = Mission::select('id', 'content')
             ->when($search, function ($query) use ($search) {
                 $query->where('content', 'ilike', "%{$search}%");
             })
             ->when($active, function ($query) use ($request) {
-                $query->where('status_code', filter_var($request->query('status_code'), FILTER_VALIDATE_BOOLEAN));
+                $query->where('active', filter_var($request->query('active'), FILTER_VALIDATE_BOOLEAN));
             })
             ->orderBy('order', 'asc')
             ->limit($limit)
@@ -94,7 +94,7 @@ class MissionController extends Controller
                 'id'                  => $mission->id,
                 'content'             => $mission->content,
                 'order'               => $mission->order,
-                'status_code'         => $mission->status_code,
+                'active'              => $mission->active,
                 'created_by_fullname' => $mission->createdBy?->fullname,
                 'created_at'          => $mission->created_at?->format('Y-m-d H:i:s'),
                 'updated_by_fullname' => $mission->updatedBy?->fullname,
@@ -128,7 +128,7 @@ class MissionController extends Controller
         $mission = Mission::create([
             'content'     => $validated['content'],
             'order'       => $validated['order'],
-            'status_code' => true,
+            'active'      => true,
             'created_by'  => Auth::id(),
             'updated_by'  => Auth::id(),
         ]);
@@ -142,7 +142,7 @@ class MissionController extends Controller
                 'id'                  => $mission->id,
                 'content'             => $mission->content,
                 'order'               => $mission->order,
-                'status_code'         => $mission->status_code,
+                'active'              => $mission->active,
                 'created_by_fullname' => $mission->createdBy?->fullname,
                 'created_at'          => $mission->created_at?->format('Y-m-d H:i:s'),
                 'updated_by_fullname' => $mission->updatedBy?->fullname,
@@ -198,7 +198,7 @@ class MissionController extends Controller
                 'id'                  => $mission->id,
                 'content'             => $mission->content,
                 'order'               => $mission->order,
-                'status_code'         => $mission->status_code,
+                'active'              => $mission->active,
                 'created_by_fullname' => $mission->createdBy?->fullname,
                 'created_at'          => $mission->created_at?->format('Y-m-d H:i:s'),
                 'updated_by_fullname' => $mission->updatedBy?->fullname,

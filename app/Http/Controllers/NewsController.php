@@ -11,39 +11,6 @@ use Illuminate\Validation\Rule;
 
 class NewsController extends Controller
 {
-    // GET Berita publish untuk publik
-    public function public(Request $request)
-    {
-        $search = $request->query('search');
-        $limit  = $request->query('limit', 9);
-
-        $news = News::where('status', 'publish')
-            ->when($search, function ($query) use ($search) {
-                $query->where('title', 'ilike', "%{$search}%");
-            })
-            ->with('createdBy')
-            ->orderBy('created_at', 'desc')
-            ->paginate($limit);
-
-        return response()->json([
-            'success'   => true,
-            'total'     => $news->total(),
-            'totalPage' => $news->lastPage(),
-            'currentPage' => $news->currentPage(),
-            'data'      => $news->through(function ($item) {
-                return [
-                    'id'         => $item->id,
-                    'slug'       => $item->slug,
-                    'title'      => $item->title,
-                    'summary'    => Str::limit(strip_tags($item->content), 120),
-                    'img_cover'  => $item->img_cover,
-                    'author'     => $item->createdBy?->fullname ?? 'Admin',
-                    'created_at' => $item->created_at?->format('d M Y'),
-                ];
-            })->items(),
-        ]);
-    }
-
     // GET News list
     public function index(Request $request)
     {

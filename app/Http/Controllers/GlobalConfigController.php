@@ -9,41 +9,6 @@ use Illuminate\Validation\ValidationException;
 
 class GlobalConfigController extends Controller
 {
-
-    // GET Global Config untuk publik (no-auth) — dipakai footer, halaman profil, dll
-    public function public()
-    {
-        $config = GlobalConfig::first();
-
-        if (!$config) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Konfigurasi belum tersedia.',
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data'    => [
-                'profile_title'       => $config->profile_title,
-                'profile_description' => $config->profile_description,
-                'img_profile_1'       => $config->img_profile_1,
-                'img_profile_2'       => $config->img_profile_2,
-                'school_vision'       => $config->school_vision,
-                'video_profile'       => $config->video_profile,
-                'school_name'         => $config->school_name,
-                'footer_description'  => $config->footer_description,
-                'motto'               => $config->motto,
-                'school_telephone'    => $config->school_telephone,
-                'school_email'        => $config->school_email,
-                'footer_ig'           => $config->footer_ig,
-                'footer_yt'           => $config->footer_yt,
-                'footer_fb'           => $config->footer_fb,
-                'footer_linkedin'     => $config->footer_linkedin,
-            ],
-        ]);
-    }
-
     // GET Global Config detail
     public function show()
     {
