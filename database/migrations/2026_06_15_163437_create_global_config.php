@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('global_config', function (Blueprint $table) {
             $table->id();
+            $table->string('hero_description', 100);
             $table->string('profile_title');
             $table->text('profile_description');
             $table->text('img_profile_1');
-            $table->text('img_profile_2');
+            $table->text('img_profile_2')->nullable();
             $table->text('school_vision');
             $table->text('video_profile');
             $table->string('school_name', 150);
-            $table->string('footer_description');
+            $table->string('footer_description')->nullable();
             $table->string('motto', 100);
             $table->string('school_telephone', 150);
             $table->string('school_email');

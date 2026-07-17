@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('major_competent', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('major_id')->constrained('majors');
-            $table->string('competent_name', 50);
+            $table->foreignId('major_id')->constrained('majors')->onDelete('cascade');            $table->string('competent_name', 50);
             $table->string('description');
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');
