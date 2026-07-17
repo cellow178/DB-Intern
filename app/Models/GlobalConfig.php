@@ -9,6 +9,7 @@ class GlobalConfig extends Model
     protected $table = 'global_config';
 
     protected $fillable = [
+        'hero_description',
         'profile_title',
         'profile_description',
         'img_profile_1',

@@ -41,14 +41,15 @@ class GlobalConfigController extends Controller
 
         try {
             $validated = $request->validate([
+                'hero_description'    => ['required', 'string', 'max:100'],
                 'profile_title'       => ['required', 'string'],
                 'profile_description' => ['required', 'string'],
                 'img_profile_1'       => ['required', 'string'],
-                'img_profile_2'       => ['required', 'string'],
+                'img_profile_2'       => ['nullable', 'string'],
                 'school_vision'       => ['required', 'string'],
                 'video_profile'       => ['required', 'string'],
                 'school_name'         => ['required', 'string', 'max:150'],
-                'footer_description'  => ['required', 'string'],
+                'footer_description'  => ['nullable', 'string'],
                 'motto'               => ['required', 'string', 'max:100'],
                 'school_telephone'    => ['required', 'string', 'max:150'],
                 'school_email'        => ['required', 'email'],
@@ -57,6 +58,8 @@ class GlobalConfigController extends Controller
                 'footer_fb'           => ['nullable', 'string'],
                 'footer_linkedin'     => ['nullable', 'string'],
             ], [
+                'hero_description.required'    => 'Deskripsi hero wajib diisi.',
+                'hero_description.max'         => 'Deskripsi hero maksimal 100 karakter.',                
                 'profile_title.required'       => 'Judul profil wajib diisi.',
                 'profile_description.required' => 'Deskripsi profil wajib diisi.',
                 'img_profile_1.required'       => 'Gambar profil 1 wajib diisi.',
@@ -67,7 +70,7 @@ class GlobalConfigController extends Controller
                 'school_name.max'              => 'Nama sekolah maksimal 150 karakter.',
                 'footer_description.required'  => 'Deskripsi footer wajib diisi.',
                 'motto.required'               => 'Motto wajib diisi.',
-                'motto.max'                     => 'Motto maksimal 100 karakter.',
+                'motto.max'                    => 'Motto maksimal 100 karakter.',
                 'school_telephone.required'    => 'Telepon sekolah wajib diisi.',
                 'school_telephone.max'         => 'Telepon sekolah maksimal 150 karakter.',
                 'school_email.required'        => 'Email sekolah wajib diisi.',
@@ -82,6 +85,7 @@ class GlobalConfigController extends Controller
         }
 
         $config->update([
+            'hero_description'    => $validated['hero_description'],
             'profile_title'       => $validated['profile_title'],
             'profile_description' => $validated['profile_description'],
             'img_profile_1'       => $validated['img_profile_1'],
@@ -114,6 +118,7 @@ class GlobalConfigController extends Controller
     {
         return [
             'id'                  => $config->id,
+            'hero_description'    => $config->hero_description,
             'profile_title'       => $config->profile_title,
             'profile_description' => $config->profile_description,
             'img_profile_1'       => $config->img_profile_1,

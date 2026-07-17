@@ -122,12 +122,13 @@ class NewsCategoryController extends Controller
         // Validasi input
         try {
             $validated = $request->validate([
-                'name'        => ['required', 'string', 'min:3', 'unique:news_categories,name'],
+                'name'        => ['required', 'string', 'min:3', 'max:50', 'unique:news_categories,name'],
                 'description' => ['nullable', 'string'],
                 'active'      => ['nullable', 'boolean'],
             ], [
                 'name.required'  => 'Nama kategori wajib diisi.',
                 'name.min'       => 'Nama kategori minimal 3 karakter.',
+                'name.max'       => 'Nama kategori maksimal 50 karakter.',
                 'name.unique'    => 'Nama kategori sudah digunakan.',
                 'active.boolean' => 'Status aktif harus berupa true atau false.',
             ]);
@@ -174,7 +175,7 @@ class NewsCategoryController extends Controller
             $validated = $request->validate([
                 'id'          => ['required', 'integer', 'exists:news_categories,id'],
                 'name'        => [
-                    'required', 'string', 'min:3',
+                    'required', 'string', 'min:3', 'max:50',
                     // Mengecualikan nama kategori yang sedang diupdate dari validasi unik
                     Rule::unique('news_categories', 'name')->ignore($request->input('id')),
                 ],
@@ -185,6 +186,7 @@ class NewsCategoryController extends Controller
                 'id.exists'         => 'Kategori tidak ditemukan.',
                 'name.required'     => 'Nama kategori wajib diisi.',
                 'name.min'          => 'Nama kategori minimal 3 karakter.',
+                'name.max'          => 'Nama kategori maksimal 50 karakter.',
                 'name.unique'       => 'Nama kategori sudah digunakan.',
                 'active.required'   => 'Active wajib dicantumkan.',
                 'active.boolean'    => 'Active harus berupa true atau false.'
