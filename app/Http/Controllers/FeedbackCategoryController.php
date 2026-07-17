@@ -230,6 +230,13 @@ class FeedbackCategoryController extends Controller
 
         $category = FeedbackCategory::find($validated['id']);
 
+        if ($category->feedbacks()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => "Kategori feedback '{$category->category_name}' tidak bisa dihapus karena masih digunakan oleh feedback lain.",
+            ], 409);
+        }
+
         $name = $category->category_name;
 
         $category->delete();

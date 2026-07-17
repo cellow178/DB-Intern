@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use \App\Models\Banner;
+use App\Models\Feedback;
+use App\Models\FeedbackCategory;
 use \App\Models\Mission;
 use App\Models\Major;
 use App\Models\GlobalConfig;
 use App\Models\News;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PublicController extends Controller
 {
@@ -143,6 +147,81 @@ class PublicController extends Controller
             'totalPage'   => $news->lastPage(),
             'currentPage' => $news->currentPage(),
             'data'        => $news->through($transform)->items(),
+        ]);
+    }
+
+    // POST Create Feedback
+    public function createFeedback(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'sender_name' => ['nullable', 'string', 'max:100'],
+                'type'        => ['required', 'boolean'],
+                'category_id' => ['required', 'integer', 'exists:feedbacks_categories,id'],
+                'message'     => ['required', 'string'],
+                'is_anonymous' => ['nullable', 'boolean']                
+            ], [
+                'sender_name.max'      => 'Nama pengirim maksimal 100 karakter.',
+                'type.required'        => 'Jenis feedback wajib diisi.',
+                'type.boolean'         => 'Jenis feedback harus berupa true (saran) atau false (kritik).',
+                'category_id.required' => 'Kategori feedback wajib diisi.',
+                'category_id.exists'   => 'Kategori feedback tidak ditemukan.',
+                'message.required'     => 'Pesan feedback wajib diisi.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors'  => $e->errors(),
+            ], 422);
+        }
+
+        $isAnonymous = filter_var($validated['is_anonymous'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        $feedback = Feedback::create([
+            'sender_name' => $validated['sender_name'] ?? null,
+            'type'        => filter_var($validated['type'], FILTER_VALIDATE_BOOLEAN),
+            'category_id' => $validated['category_id'],
+            'message'     => $validated['message'],
+            'created_by'  => $isAnonymous ? null : Auth::id(),
+        ]);
+
+        $feedback->load(['category', 'createdBy']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Feedback berhasil dikirim.',
+            'data'    => [
+                'id'                  => $feedback->id,
+                'sender_name'         => $feedback->sender_name ?? 'Anonim',
+                'type'                => $feedback->type,
+                'category_id'         => $feedback->category_id,
+                'category_name'       => $feedback->category?->category_name,
+                'message'             => $feedback->message,
+                'created_by_fullname' => $feedback->createdBy?->fullname,
+                'created_at'          => $feedback->created_at?->format('Y-m-d H:i:s'),
+            ],
+        ], 201);
+    }
+
+    // GET Feedback Categories Dataset (Public)
+    public function feedbackCategoriesDataset(Request $request)
+    {
+        $search = $request->query('search');
+        $limit  = $request->query('limit');
+
+        $categories = FeedbackCategory::select('id', 'category_name')
+            ->where('active', true)
+            ->when($search, function ($query) use ($search) {
+                $query->where('category_name', 'ilike', "%{$search}%");
+            })
+            ->orderBy('category_name')
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $categories,
         ]);
     }
 }

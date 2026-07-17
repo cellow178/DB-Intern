@@ -19,6 +19,11 @@ class FeedbackCategory extends Model
         'active' => 'boolean',
     ];
 
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class, 'category_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -10,6 +10,7 @@ use App\Http\Controllers\MajorController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsCategoryController;
 use App\Http\Controllers\FeedbackCategoryController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GlobalConfigController;
 use App\Http\Controllers\MajorCompetentController;
 use App\Http\Controllers\PublicController;
@@ -32,6 +33,8 @@ Route::get('/no-auth/banners', [PublicController::class, 'banner']);
 Route::get('/no-auth/vision-mission', [PublicController::class, 'visionMission']);
 Route::get('/no-auth/majors', [PublicController::class, 'majorCard']);
 Route::get('/no-auth/news', [PublicController::class, 'news']);
+Route::post('/no-auth/feedback/create', [PublicController::class, 'createFeedback']);
+Route::get('/no-auth/feedback-categories', [PublicController::class, 'feedbackCategoriesDataset']);
 
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
@@ -49,24 +52,24 @@ Route::group([
     Route::get('/missions/dataset', [MissionController::class, 'dataset']);
     Route::get('/missions/{id}', [MissionController::class, 'show']);
     Route::post('/missions/create', [MissionController::class, 'create']);
-    Route::put('/missions/update/', [MissionController::class, 'update']);
-    Route::post('/missions/update-status/', [MissionController::class, 'updateStatus']);
-    Route::delete('/missions/delete/', [MissionController::class, 'destroy']);
+    Route::put('/missions/update', [MissionController::class, 'update']);
+    Route::post('/missions/update-status', [MissionController::class, 'updateStatus']);
+    Route::delete('/missions/delete', [MissionController::class, 'destroy']);
 
     // Majors
     Route::get('/majors', [MajorController::class, 'index']);
     Route::get('/majors/dataset', [MajorController::class, 'dataset']);
     Route::get('/majors/{id}', [MajorController::class, 'show']);
     Route::post('/majors/create', [MajorController::class, 'create']);
-    Route::put('/majors/update/', [MajorController::class, 'update']);
-    Route::post('/majors/update-status/', [MajorController::class, 'updateStatus']);
-    Route::delete('/majors/delete/', [MajorController::class, 'destroy']);
+    Route::put('/majors/update', [MajorController::class, 'update']);
+    Route::post('/majors/update-status', [MajorController::class, 'updateStatus']);
+    Route::delete('/majors/delete', [MajorController::class, 'destroy']);
 
     // Major Competents
     Route::get('/major-competents', [MajorCompetentController::class, 'index']);
     Route::post('/major-competents/create', [MajorCompetentController::class, 'create']);
     Route::put('/major-competents/update', [MajorCompetentController::class, 'update']);
-    Route::delete('/major-competents/delete/', [MajorCompetentController::class, 'destroy']);
+    Route::delete('/major-competents/delete', [MajorCompetentController::class, 'destroy']);
 
     // News
     Route::get('/news', [NewsController::class, 'index']);
@@ -74,24 +77,29 @@ Route::group([
     Route::get('/news/{id}', [NewsController::class, 'show']);
     Route::post('/news/create', [NewsController::class, 'create']);
     Route::post('/news/update-highlight', [NewsController::class, 'updateHighlight']);
-    Route::put('/news/update/', [NewsController::class, 'update']);
-    Route::delete('/news/delete/', [NewsController::class, 'destroy']);
+    Route::put('/news/update', [NewsController::class, 'update']);
+    Route::delete('/news/delete', [NewsController::class, 'destroy']);
 
     // News Category
     Route::get('/news-categories', [NewsCategoryController::class, 'index']);
     Route::get('/news-categories/dataset', [NewsCategoryController::class, 'dataset']);
     Route::get('/news-categories/{id}', [NewsCategoryController::class, 'show']);
     Route::post('/news-categories/create', [NewsCategoryController::class, 'create']);
-    Route::put('/news-categories/update/', [NewsCategoryController::class, 'update']);
-    Route::delete('/news-categories/delete/', [NewsCategoryController::class, 'destroy']);
+    Route::put('/news-categories/update', [NewsCategoryController::class, 'update']);
+    Route::delete('/news-categories/delete', [NewsCategoryController::class, 'destroy']);
+
+    // Feedback
+    Route::get('/feedbacks', [FeedbackController::class, 'index'] );
+    Route::get('/feedbacks/{id}', [FeedbackController::class, 'show'] );
+    Route::delete('/feedbacks/delete', [FeedbackController::class, 'destroy'] );
 
     // Feedbacks Category
     Route::get('/feedbacks-categories', [FeedbackCategoryController::class, 'index']);
     Route::get('/feedbacks-categories/dataset', [FeedbackCategoryController::class, 'dataset']);
     Route::get('/feedbacks-categories/{id}', [FeedbackCategoryController::class, 'show']);
     Route::post('/feedbacks-categories/create', [FeedbackCategoryController::class, 'create']);
-    Route::put('/feedbacks-categories/update/', [FeedbackCategoryController::class, 'update']);
-    Route::delete('/feedbacks-categories/delete/', [FeedbackCategoryController::class, 'destroy']);
+    Route::put('/feedbacks-categories/update', [FeedbackCategoryController::class, 'update']);
+    Route::delete('/feedbacks-categories/delete', [FeedbackCategoryController::class, 'destroy']);
 
     // Global Config
     Route::get('/global-config/show', [App\Http\Controllers\GlobalConfigController::class, 'show']);
