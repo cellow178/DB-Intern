@@ -12,6 +12,7 @@ class MajorCompetent extends Model
         'major_id',
         'competent_name',
         'description',
+        'active',
         'created_by',
         'updated_by'
     ];

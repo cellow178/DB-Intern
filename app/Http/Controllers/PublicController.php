@@ -204,7 +204,7 @@ class PublicController extends Controller
         ], 201);
     }
 
-    // GET Feedback Categories Dataset (Public)
+    // GET Feedback Categories Dataset
     public function feedbackCategoriesDataset(Request $request)
     {
         $search = $request->query('search');
@@ -216,7 +216,7 @@ class PublicController extends Controller
                 $query->where('category_name', 'ilike', "%{$search}%");
             })
             ->orderBy('category_name')
-            ->limit(20)
+            ->limit($limit)
             ->get();
 
         return response()->json([

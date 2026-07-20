@@ -29,7 +29,7 @@ class Major extends Model
 
     public function competent(): HasMany
     {
-        return $this->hasMany(MajorCompetent::class, 'category_id');
+        return $this->hasMany(MajorCompetent::class, 'major_id');
     }
 
     public function createdBy()

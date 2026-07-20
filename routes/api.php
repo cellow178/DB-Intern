@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CrudController;
+use App\Http\Controllers\EventController;
 // use App\Http\Controllers\CustomController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\MissionController;
@@ -32,6 +33,7 @@ Route::get('/no-auth/global-config', [PublicController::class, 'globalConfig']);
 Route::get('/no-auth/banners', [PublicController::class, 'banner']);
 Route::get('/no-auth/vision-mission', [PublicController::class, 'visionMission']);
 Route::get('/no-auth/majors', [PublicController::class, 'majorCard']);
+Route::get('/no-auth/events', [PublicController::class, 'event']);
 Route::get('/no-auth/news', [PublicController::class, 'news']);
 Route::post('/no-auth/feedback/create', [PublicController::class, 'createFeedback']);
 Route::get('/no-auth/feedback-categories', [PublicController::class, 'feedbackCategoriesDataset']);
@@ -70,6 +72,14 @@ Route::group([
     Route::post('/major-competents/create', [MajorCompetentController::class, 'create']);
     Route::put('/major-competents/update', [MajorCompetentController::class, 'update']);
     Route::delete('/major-competents/delete', [MajorCompetentController::class, 'destroy']);
+
+    // Events
+    Route::get('/events', [EventController::class, 'index']);
+    Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::post('/events/create', [EventController::class, 'create']);
+    Route::put('/events/update', [EventController::class, 'update']);
+    Route::post('/events/update-highlight', [EventController::class, 'updateHighlight']);
+    Route::delete('/events/delete', [EventController::class, 'destroy']);        
 
     // News
     Route::get('/news', [NewsController::class, 'index']);

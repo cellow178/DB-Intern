@@ -20,26 +20,22 @@ class NewsCategoryController extends Controller
         $sort   = $request->query('sort', 'asc');
         $active = $request->query('active');
 
-        // Validasi parameter sort_by dan active
-        $allowedSorts = ['id', 'name', 'active', 'updated_at'];
+        // Validasi parameter sort_by
+        $allowedSorts = ['id', 'name', 'updated_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
-        }
-
-        // Validasi parameter active
-        $allowedActive = ['true', 'false', '1', '0'];
-        if ($active !== null && !in_array($active, $allowedActive)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Parameter active hanya boleh true atau false.',
-            ], 422);
         }
 
         // Query untuk mengambil data kategori berita dengan relasi createdBy dan updatedBy
         $categories = NewsCategory::with(['createdBy', 'updatedBy'])
             ->when($search, function ($query) use ($search) {
-                $query->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('description', 'ilike', "%{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'ilike', "%{$search}%")
+                        ->orWhere('description', 'ilike', "%{$search}%");
+                });
+            })
+            ->when($active !== null, function ($query) use ($active) {
+                $query->where('active', filter_var($active, FILTER_VALIDATE_BOOLEAN));
             })
             ->orderBy($sortBy, $sort)
             ->paginate($limit);

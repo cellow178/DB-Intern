@@ -17,16 +17,22 @@ class MajorCompetentController extends Controller
         $limit  = $request->query('limit', 10);
         $sort   = $request->query('sort', 'asc');
         $sortby = $request->query('sort_by', 'id');
+        $active = $request->query('active');
 
-        $alloweSorts = ['id', 'competent_name', 'updated_at'];
-        if (!in_array($sortby, $alloweSorts)) {
+        $allowedSorts = ['id', 'competent_name', 'updated_at'];
+        if (!in_array($sortby, $allowedSorts)) {
             $sortby = 'id';
         }
 
         $majorCompetent = MajorCompetent::with(['major', 'createdBy', 'updatedBy'])
+            ->when($active !== null, function ($query) use ($active) {
+                $query->where('active', filter_var($active, FILTER_VALIDATE_BOOLEAN));
+            })        
             ->when($search, function ($query) use ($search) {
-                $query->where('competent_name', 'ilike', "%{$search}%")
+                $query->where(function ($q) use ($search) {
+                    $q->where('competent_name', 'ilike', "%{$search}%")
                         ->orWhere('description', 'ilike', "%{$search}%");
+                });
             })
             ->orderBy($sortby, $sort)
             ->paginate($limit);
@@ -42,6 +48,7 @@ class MajorCompetentController extends Controller
                     'major_name'            => $item->major?->major_name,
                     'competent_name'        => $item->competent_name,
                     'description'           => $item->description,
+                    'active'                => $item->active,
                     'created_by_fullname'   => $item->createdBy?->fullname,
                     'updated_by_fullname'   => $item->updatedBy?->fullname,
                 ];
@@ -115,7 +122,8 @@ class MajorCompetentController extends Controller
                     Rule::exists('majors', 'id')->where('active', true)
                 ],
                 'competent_name' => ['required', 'string', 'max:50'],
-                'description'    => ['required', 'string']
+                'description'    => ['required', 'string'],
+                'active'         => ['required', 'boolean']
             ], [
                 'id.required'               => 'ID kompetensi wajib diisi.',
                 'id.exists'                 => 'Kompetensi tidak ditemukan.',
@@ -124,7 +132,9 @@ class MajorCompetentController extends Controller
                 'major_id.exists'           => 'ID jurusan tidak ditemukan atau tidak aktif.',
                 'competent_name.required'   => 'Nama kompetensi wajib diisi.',
                 'competent_name.max'        => 'Nama kompetensi maksimal 50 karakter.',
-                'description.required'      => 'Deskripsi wajib diisi.'
+                'description.required'      => 'Deskripsi wajib diisi.',
+                'active.required'           => 'Active wajib dicantumkan.',
+                'active.boolean'            => 'Active harus berupa true atau false.'
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -140,6 +150,7 @@ class MajorCompetentController extends Controller
             'major_id'       => $validated['major_id'],
             'competent_name' => $validated['competent_name'],
             'description'    => $validated['description'],
+            'active'         => $validated['active'],
             'updated_by'     => Auth::id()
         ]);
 

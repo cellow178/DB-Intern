@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('major_id')->constrained('majors')->onDelete('cascade');
             $table->string('competent_name', 50);
             $table->string('description');
+            $table->boolean('active')->default(true);            
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);
