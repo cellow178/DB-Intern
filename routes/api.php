@@ -35,6 +35,7 @@ Route::get('/no-auth/vision-mission', [PublicController::class, 'visionMission']
 Route::get('/no-auth/majors', [PublicController::class, 'majorCard']);
 Route::get('/no-auth/events', [PublicController::class, 'event']);
 Route::get('/no-auth/news', [PublicController::class, 'news']);
+Route::get('/no-auth/news-categories', [PublicController::class, 'newsCategories']);
 Route::post('/no-auth/feedback/create', [PublicController::class, 'createFeedback']);
 Route::get('/no-auth/feedback-categories', [PublicController::class, 'feedbackCategoriesDataset']);
 

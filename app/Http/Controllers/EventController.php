@@ -20,7 +20,7 @@ class EventController extends Controller
         $status      = $request->query('status');
         $isHighlight = $request->query('is_highlight');
 
-        $allowedSorts = ['id', 'title', 'updated_at'];
+        $allowedSorts = ['id', 'title', 'start_date', 'updated_at'];
         if (!in_array($sortBy, $allowedSorts)) {
             $sortBy = 'id';
         }
@@ -51,7 +51,7 @@ class EventController extends Controller
                     'start_date'    => $item->start_date?->format('d M Y'),
                     'end_date'      => $item->end_date?->format('d M Y'),
                     'status'        => $item->status,
-                    'is_highlight'   => $item->is_highlight,
+                    'is_highlight'  => $item->is_highlight,
                     'author'        => $item->createdBy?->fullname,
                 ];
             })->items(),

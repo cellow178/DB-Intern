@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use \App\Models\Banner;
+use App\Models\Event;
 use App\Models\Feedback;
 use App\Models\FeedbackCategory;
 use \App\Models\Mission;
 use App\Models\Major;
 use App\Models\GlobalConfig;
 use App\Models\News;
+use App\Models\NewsCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -71,6 +73,13 @@ class PublicController extends Controller
     public function visionMission()
     {
         $config = GlobalConfig::first();
+        
+        if (!$config) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Konfigurasi belum tersedia.',
+            ], 404);
+        }
 
         $missions = Mission::where('active', 'true')
             ->orderBy('order', 'asc')
@@ -89,7 +98,7 @@ class PublicController extends Controller
     public function majorCard()
     {
         $majors = Major::where('active', true)
-            ->orderBy('major_name', 'asc')
+            ->orderBy('id', 'asc')
             ->get(['id', 'slug', 'img_logo', 'code', 'major_name', 'summary']);
 
         return response()->json([
@@ -99,18 +108,79 @@ class PublicController extends Controller
         ]);
     }
 
-    // GET Berita publish (card)
-    public function news(Request $request)
+    // GET Event Publish (card)
+    public function event(Request $request)
     {
         $search = $request->query('search');
         $limit  = $request->query('limit');
-        $sort   = $request->query('sort', 'desc');
-        $sortBy = $request->query('sort_by', 'created_at');
+        $sort   = $request->query('sort', 'asc');
+        $sortBy = $request->query('sort_by', 'start_date');
+
+        $query = Event::where('status', 'publish')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'ilike', "%{$search}%")
+                        ->orWhere('location', 'ilike', "%{$search}%");
+                });
+            })
+            ->with('createdBy')
+            ->orderBy($sortBy, $sort);
+
+        $transform = function ($item) {
+            return [
+                'id'           => $item->id,
+                'slug'         => $item->slug,
+                'title'        => $item->title,
+                'content'      => $item->content,
+                'location'     => $item->location,
+                'start_date'   => $item->start_date?->format('d M Y'),
+                'end_date'     => $item->end_date?->format('d M Y'),
+                'img_cover'    => $item->img_cover,
+                'is_highlight' => $item->is_highlight,
+                'author'       => $item->createdBy?->fullname ?? 'Admin',
+            ];
+        };
+
+        // Kalau limit tidak dikirim (null) atau eksplisit 'all', tampilkan semua data
+        if ($limit === null || $limit === 'all') {
+            $events = $query->get();
+
+            return response()->json([
+                'success'     => true,
+                'total'       => $events->count(),
+                'totalPage'   => 1,
+                'currentPage' => 1,
+                'data'        => $events->map($transform)->values(),
+            ]);
+        }
+
+        $events = $query->paginate((int) $limit);
+
+        return response()->json([
+            'success'     => true,
+            'total'       => $events->total(),
+            'totalPage'   => $events->lastPage(),
+            'currentPage' => $events->currentPage(),
+            'data'        => $events->through($transform)->items(),
+        ]);
+    }    
+
+    // GET Berita publish (card)
+    public function news(Request $request)
+    {
+        $search     = $request->query('search');
+        $categoryId = $request->query('category_id');
+        $limit      = $request->query('limit');
+        $sort       = $request->query('sort', 'desc');
+        $sortBy     = $request->query('sort_by', 'created_at');
 
         $query = News::where('status', 'publish')
             ->when($search, function ($query) use ($search) {
                 $query->where('title', 'ilike', "%{$search}%");
             })
+            ->when($categoryId, function ($query) use ($categoryId) {
+                $query->where('category_id', $categoryId);
+            })            
             ->with('createdBy')
             ->orderBy($sortBy, $sort);
 
@@ -119,7 +189,7 @@ class PublicController extends Controller
                 'id'         => $item->id,
                 'slug'       => $item->slug,
                 'title'      => $item->title,
-                'summary'    => Str::limit(strip_tags($item->content), 120),
+                'summary'    => $item->content,
                 'img_cover'  => $item->img_cover,
                 'author'     => $item->createdBy?->fullname ?? 'Admin',
                 'created_at' => $item->created_at?->format('d M Y'),
@@ -147,6 +217,25 @@ class PublicController extends Controller
             'totalPage'   => $news->lastPage(),
             'currentPage' => $news->currentPage(),
             'data'        => $news->through($transform)->items(),
+        ]);
+    }
+
+    public function newsCategories(Request $request)
+    {
+        $search = $request->query('search');
+
+        $categories = NewsCategory::select('id', 'name')
+            ->where('active', true)
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'ilike', "%{$search}%");
+            })
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'total'   => $categories->count(),
+            'data'    => $categories,
         ]);
     }
 
