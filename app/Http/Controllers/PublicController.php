@@ -224,7 +224,7 @@ class PublicController extends Controller
     {
         $search = $request->query('search');
 
-        $categories = NewsCategory::select('id', 'name')
+        $categories = NewsCategory::select('id', 'name', 'description')
             ->where('active', true)
             ->when($search, function ($query) use ($search) {
                 $query->where('name', 'ilike', "%{$search}%");
