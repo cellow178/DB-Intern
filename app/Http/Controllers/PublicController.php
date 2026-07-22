@@ -11,6 +11,7 @@ use App\Models\Major;
 use App\Models\GlobalConfig;
 use App\Models\News;
 use App\Models\NewsCategory;
+use App\Models\Voting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -73,7 +74,7 @@ class PublicController extends Controller
     public function visionMission()
     {
         $config = GlobalConfig::first();
-        
+
         if (!$config) {
             return response()->json([
                 'success' => false,
@@ -163,7 +164,7 @@ class PublicController extends Controller
             'currentPage' => $events->currentPage(),
             'data'        => $events->through($transform)->items(),
         ]);
-    }    
+    }
 
     // GET Berita publish (card)
     public function news(Request $request)
@@ -180,7 +181,7 @@ class PublicController extends Controller
             })
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
-            })            
+            })
             ->with('createdBy')
             ->orderBy($sortBy, $sort);
 
@@ -239,6 +240,62 @@ class PublicController extends Controller
         ]);
     }
 
+    // GET Voting aktif (card)
+    public function voting(Request $request)
+    {
+        $search = $request->query('search');
+        $limit  = $request->query('limit');
+        $sort   = $request->query('sort', 'asc');
+        $sortBy = $request->query('sort_by', 'end_date');
+
+        $query = Voting::where('active', true)
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'ilike', "%{$search}%")
+                        ->orWhere('description', 'ilike', "%{$search}%");
+                });
+            })
+            ->withCount('votingCandidate')
+            ->orderBy($sortBy, $sort);
+
+        $transform = function ($item) {
+            return [
+                'id'              => $item->id,
+                'slug'            => $item->slug,
+                'title'           => $item->title,
+                'description'     => $item->description,
+                'img_cover'       => $item->img_cover,
+                'start_date'      => $item->start_date?->format('d M Y H:i'),
+                'end_date'        => $item->end_date?->format('d M Y H:i'),
+                'is_highlight'    => $item->is_highlight,
+                'candidate_count' => $item->voting_candidate_count,
+            ];
+        };
+
+        // Kalau limit tidak dikirim (null) atau eksplisit 'all', tampilkan semua data
+        if ($limit === null || $limit === 'all') {
+            $votings = $query->get();
+
+            return response()->json([
+                'success'     => true,
+                'total'       => $votings->count(),
+                'totalPage'   => 1,
+                'currentPage' => 1,
+                'data'        => $votings->map($transform)->values(),
+            ]);
+        }
+
+        $votings = $query->paginate((int) $limit);
+
+        return response()->json([
+            'success'     => true,
+            'total'       => $votings->total(),
+            'totalPage'   => $votings->lastPage(),
+            'currentPage' => $votings->currentPage(),
+            'data'        => $votings->through($transform)->items(),
+        ]);
+    }
+
     // POST Create Feedback
     public function createFeedback(Request $request)
     {
@@ -248,7 +305,7 @@ class PublicController extends Controller
                 'type'        => ['required', 'boolean'],
                 'category_id' => ['required', 'integer', 'exists:feedbacks_categories,id'],
                 'message'     => ['required', 'string'],
-                'is_anonymous' => ['nullable', 'boolean']                
+                'is_anonymous' => ['nullable', 'boolean']
             ], [
                 'sender_name.max'      => 'Nama pengirim maksimal 100 karakter.',
                 'type.required'        => 'Jenis feedback wajib diisi.',

@@ -15,6 +15,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GlobalConfigController;
 use App\Http\Controllers\MajorCompetentController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\VotingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,7 @@ Route::get('/no-auth/majors', [PublicController::class, 'majorCard']);
 Route::get('/no-auth/events', [PublicController::class, 'event']);
 Route::get('/no-auth/news', [PublicController::class, 'news']);
 Route::get('/no-auth/news-categories', [PublicController::class, 'newsCategories']);
+Route::get('/no-auth/votings', [PublicController::class, 'voting']);
 Route::post('/no-auth/feedback/create', [PublicController::class, 'createFeedback']);
 Route::get('/no-auth/feedback-categories', [PublicController::class, 'feedbackCategoriesDataset']);
 
@@ -80,7 +82,7 @@ Route::group([
     Route::post('/events/create', [EventController::class, 'create']);
     Route::put('/events/update', [EventController::class, 'update']);
     Route::post('/events/update-highlight', [EventController::class, 'updateHighlight']);
-    Route::delete('/events/delete', [EventController::class, 'destroy']);        
+    Route::delete('/events/delete', [EventController::class, 'destroy']);
 
     // News
     Route::get('/news', [NewsController::class, 'index']);
@@ -99,10 +101,18 @@ Route::group([
     Route::put('/news-categories/update', [NewsCategoryController::class, 'update']);
     Route::delete('/news-categories/delete', [NewsCategoryController::class, 'destroy']);
 
+    // Votings
+    Route::get('/votings', [VotingController::class, 'index']);
+    Route::get('/votings/{id}', [VotingController::class, 'show']);
+    Route::post('/votings/create', [VotingController::class, 'create']);
+    Route::post('/votings/update-highlight', [VotingController::class, 'updateHighlight']);
+    Route::put('/votings/update', [VotingController::class, 'update']);
+    Route::delete('/votings/delete', [VotingController::class, 'destroy']);
+
     // Feedback
-    Route::get('/feedbacks', [FeedbackController::class, 'index'] );
-    Route::get('/feedbacks/{id}', [FeedbackController::class, 'show'] );
-    Route::delete('/feedbacks/delete', [FeedbackController::class, 'destroy'] );
+    Route::get('/feedbacks', [FeedbackController::class, 'index']);
+    Route::get('/feedbacks/{id}', [FeedbackController::class, 'show']);
+    Route::delete('/feedbacks/delete', [FeedbackController::class, 'destroy']);
 
     // Feedbacks Category
     Route::get('/feedbacks-categories', [FeedbackCategoryController::class, 'index']);

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->text('img_cover')->nullable();
             $table->string('title');
             $table->string('description');
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
             $table->boolean('active')->default(true);
             $table->boolean('is_highlight')->default(false);
             $table->foreignId('created_by')->constrained('users');
