@@ -49,7 +49,7 @@ class FeedbackController extends Controller
                 return [
                     'id'                  => $item->id,
                     'sender_name'         => $item->sender_name ?? 'Anonim',
-                    'type'                => $item->type,
+                    'type'                => $item->type? 'saran' : 'kritik',
                     'category_id'         => $item->category_id,
                     'category_name'       => $item->category?->category_name,
                     'message'             => $item->message,
@@ -77,7 +77,7 @@ class FeedbackController extends Controller
             'data'    => [
                 'id'                  => $feedback->id,
                 'sender_name'         => $feedback->sender_name ?? 'Anonim',
-                'type'                => $feedback->type,
+                'type'                => $feedback->type? 'saran' : 'kritik',
                 'category_id'         => $feedback->category_id,
                 'category_name'       => $feedback->category?->category_name,
                 'message'             => $feedback->message,

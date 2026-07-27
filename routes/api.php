@@ -15,6 +15,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GlobalConfigController;
 use App\Http\Controllers\MajorCompetentController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\VotingCandidateController;
 use App\Http\Controllers\VotingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -109,6 +110,13 @@ Route::group([
     Route::put('/votings/update', [VotingController::class, 'update']);
     Route::delete('/votings/delete', [VotingController::class, 'destroy']);
 
+    // Voting Candidates
+    Route::get('/voting-candidates', [VotingCandidateController::class, 'index']);
+    Route::get('/voting-candidates/{id}', [VotingCandidateController::class, 'show']);
+    Route::post('/voting-candidates/create', [VotingCandidateController::class, 'create']);
+    Route::put('/voting-candidates/update', [VotingCandidateController::class, 'update']);
+    Route::delete('/voting-candidates/delete', [VotingCandidateController::class, 'destroy']);    
+
     // Feedback
     Route::get('/feedbacks', [FeedbackController::class, 'index']);
     Route::get('/feedbacks/{id}', [FeedbackController::class, 'show']);
@@ -123,8 +131,8 @@ Route::group([
     Route::delete('/feedbacks-categories/delete', [FeedbackCategoryController::class, 'destroy']);
 
     // Global Config
-    Route::get('/global-config/show', [App\Http\Controllers\GlobalConfigController::class, 'show']);
-    Route::put('/global-config/update', [App\Http\Controllers\GlobalConfigController::class, 'update']);
+    Route::get('/global-config/show', [GlobalConfigController::class, 'show']);
+    Route::put('/global-config/update', [GlobalConfigController::class, 'update']);
 
     // Route dinamis kustom bawaan project (Wajib di bawah route spesifik agar tidak bentrok)
     Route::get('/{model}', [CrudController::class, 'index']);

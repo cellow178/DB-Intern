@@ -31,17 +31,42 @@ class PublicController extends Controller
             ], 404);
         }
 
+        $highlightVoting = Voting::with(['votingCandidate' => function ($query) {
+                $query->where('active', true)
+                    ->orderBy('order', 'asc');
+            }])
+            ->where('is_highlight', true)
+            ->latest()
+            ->first();
+
         return response()->json([
             'success' => true,
             'data'    => [
+                'hero_description'  => $config->hero_description,
                 'profile'   => [
                     'title'       => $config->profile_title,
                     'description' => $config->profile_description,
                     'img_1'       => $config->img_profile_1,
                     'img_2'       => $config->img_profile_2,
                 ],
-                'video_profile'     => $config->video_profile,
-                'school_name'       => $config->school_name,
+                'video_profile'   => $config->video_profile,
+                'school_name'     => $config->school_name,
+                'highlight_voting' => $highlightVoting ? [
+                    'id'          => $highlightVoting->id,
+                    'title'       => $highlightVoting->title,
+                    'description' => $highlightVoting->description,
+                    'start_date'  => $highlightVoting->start_date?->format('d M Y'),
+                    'end_date'    => $highlightVoting->end_date?->format('d M Y'),
+                    'candidates'  => $highlightVoting->votingCandidate->map(function ($candidate) {
+                        return [
+                            'id'          => $candidate->id,
+                            'title'       => $candidate->title,
+                            'description' => $candidate->description,
+                            'img_cover'   => $candidate->img_cover,
+                            'order'       => $candidate->order
+                        ];
+                    }),
+                ] : null,
                 'footer'    => [
                     'description'       => $config->footer_description,
                     'motto'             => $config->motto,
@@ -265,10 +290,9 @@ class PublicController extends Controller
                 'title'           => $item->title,
                 'description'     => $item->description,
                 'img_cover'       => $item->img_cover,
-                'start_date'      => $item->start_date?->format('d M Y H:i'),
-                'end_date'        => $item->end_date?->format('d M Y H:i'),
-                'is_highlight'    => $item->is_highlight,
-                'candidate_count' => $item->voting_candidate_count,
+                'start_date'      => $item->start_date?->format('d M Y H:i:s'),
+                'end_date'        => $item->end_date?->format('d M Y H:i:s'),
+                'is_highlight'    => $item->is_highlight
             ];
         };
 
@@ -340,7 +364,7 @@ class PublicController extends Controller
             'data'    => [
                 'id'                  => $feedback->id,
                 'sender_name'         => $feedback->sender_name ?? 'Anonim',
-                'type'                => $feedback->type,
+                'type'                => $feedback->type? 'saran' : 'kritik',
                 'category_id'         => $feedback->category_id,
                 'category_name'       => $feedback->category?->category_name,
                 'message'             => $feedback->message,
