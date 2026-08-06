@@ -32,9 +32,9 @@ class PublicController extends Controller
         }
 
         $highlightVoting = Voting::with(['votingCandidate' => function ($query) {
-                $query->where('active', true)
-                    ->orderBy('order', 'asc');
-            }])
+            $query->where('active', true)
+                ->orderBy('order', 'asc');
+        }])
             ->where('is_highlight', true)
             ->latest()
             ->first();
@@ -49,6 +49,7 @@ class PublicController extends Controller
                     'img_1'       => $config->img_profile_1,
                     'img_2'       => $config->img_profile_2,
                 ],
+                'motto'           => $config->motto,
                 'video_profile'   => $config->video_profile,
                 'school_name'     => $config->school_name,
                 'highlight_voting' => $highlightVoting ? [
@@ -69,7 +70,6 @@ class PublicController extends Controller
                 ] : null,
                 'footer'    => [
                     'description'       => $config->footer_description,
-                    'motto'             => $config->motto,
                     'school_telephone'  => $config->school_telephone,
                     'school_email'      => $config->school_email,
                     'ig'                => $config->footer_ig,
@@ -364,7 +364,7 @@ class PublicController extends Controller
             'data'    => [
                 'id'                  => $feedback->id,
                 'sender_name'         => $feedback->sender_name ?? 'Anonim',
-                'type'                => $feedback->type? 'saran' : 'kritik',
+                'type'                => $feedback->type ? 'saran' : 'kritik',
                 'category_id'         => $feedback->category_id,
                 'category_name'       => $feedback->category?->category_name,
                 'message'             => $feedback->message,
