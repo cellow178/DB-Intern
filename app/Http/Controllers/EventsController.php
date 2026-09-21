@@ -3,71 +3,60 @@
 namespace App\Http\Controllers;
 
 use App\CoreService\CallService;
-use App\Models\News;
+use App\Models\Events;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-class NewsController extends Controller
+class EventsController extends Controller
 {
-    // GET List
+    // GET Event list
     public function index(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'news';
+        $input['model'] = 'events';
         $input['limit']   = $input['limit'] ?? 10;
 
         return CallService::run('Get', $input);
     }
 
-    // GET Dataset
-    public function dataset(Request $request)
-    {
-        $input = $request->all();
-        $input['model']   = 'news';
-        $input['sort_by'] = $input['sort_by'] ?? 'updated_at';
-        $input['sort']    = $input['sort'] ?? 'desc';
-
-        return CallService::run('Dataset', $input);
-    }
-
-    // GET Detail (Show) by ID
+    // GET Event detail (Show) by ID
     public function show(int $id)
     {
         return CallService::run('Find', [
             'id'    => $id,
-            'model' => 'news',
+            'model' => 'events',
         ]);
     }
 
-    // POST Create
+    // POST Create event
     public function create(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'news';
+        $input['model'] = 'events';
 
         return CallService::run('Add', $input);
     }
 
-    // PUT Update
+    // PUT Update event
     public function update(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'news';
+        $input['model'] = 'events';
 
         return CallService::run('Edit', $input);
     }
 
-    //POST Update highlight news
+    // POST Update highlight event custom
     public function updateHighlight(Request $request)
     {
         try {
             $validated = $request->validate([
-                'id' => ['required', 'integer', 'exists:news,id'],
+                'id' => ['required', 'integer', 'exists:events,id'],
             ], [
-                'id.required' => 'ID berita wajib diisi.',
-                'id.integer'  => 'ID berita harus berupa angka.',
-                'id.exists'   => 'Berita tidak ditemukan.',
+                'id.required' => 'ID event wajib diisi.',
+                'id.integer'  => 'ID event harus berupa angka.',
+                'id.exists'   => 'Event tidak ditemukan.',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -77,40 +66,39 @@ class NewsController extends Controller
             ], 422);
         }
 
-        $news = News::find($validated['id']);
+        $event = Events::find($validated['id']);
 
-        if ($news->status !== 'publish') {
+        if ($event->status !== 'publish') {
             return response()->json([
                 'success' => false,
-                'message' => 'Hanya berita berstatus publish yang dapat dijadikan highlight.',
+                'message' => 'Hanya event berstatus publish yang dapat dijadikan highlight.',
             ], 422);
         }
 
-        $newHighlightStatus = !$news->is_highlight;
+        $newHighlightStatus = !$event->is_highlight;
 
         if ($newHighlightStatus) {
-            News::where('id', '!=', $news->id)
+            Events::where('id', '!=', $event->id)
                 ->where('is_highlight', true)
                 ->update(['is_highlight' => false]);
         }
 
-        $news->update([
+        $event->update([
             'is_highlight' => $newHighlightStatus,
             'updated_by'   => Auth::id(),
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => "Berita '{$news->title}' berhasil " . ($newHighlightStatus ? 'dijadikan' : 'dibatalkan dari') . ' highlight.',
+            'message' => "Event '{$event->title}' berhasil " . ($newHighlightStatus ? 'dijadikan' : 'dibatalkan dari') . ' highlight.',
         ]);
     }
 
-
-    // DELETE
+    // DELETE Delete event
     public function destroy(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'news';
+        $input['model'] = 'events';
 
         return CallService::run('Delete', $input);
     }

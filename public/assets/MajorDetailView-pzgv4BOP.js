@@ -1,0 +1,1 @@
+import{ct as e,dt as t,yt as n}from"./vendor-BjjboA1Q.js";import{t as r}from"./index-CO8fchBz.js";var i={},a={class:`about`};function o(r,i){return n(),t(`div`,a,[...i[0]||=[e(`h1`,null,`This is a major detail page`,-1)]])}var s=r(i,[[`render`,o]]);export{s as default};

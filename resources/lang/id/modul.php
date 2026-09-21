@@ -1,5 +1,5 @@
 <?php 
 
 return [
-    "permissions" => "Permissions",
+    "news" => "News",
 ];

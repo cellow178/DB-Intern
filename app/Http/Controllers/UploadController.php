@@ -20,7 +20,7 @@ class UploadController extends Controller
         // $req = request()->all();
         // $path = request()->file('file')->store('tmp');
         $file = request()->file('file');
-        
+
         # Validasi Extension
         $allowedExtensions = ['pdf', 'jpeg', 'jpg', 'png', 'gif', 'bmp', 'heic', 'doc', 'docx', 'webp', 'xls', 'xlsx', 'ppt', 'pptx'];
         if (!in_array($file->getClientOriginalExtension(), $allowedExtensions)) return response()->json([
@@ -196,5 +196,4 @@ class UploadController extends Controller
             ], 404);
         }
     }
-
 }

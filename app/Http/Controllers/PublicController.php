@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use \App\Models\Banner;
-use App\Models\Event;
-use App\Models\Feedback;
-use App\Models\FeedbackCategory;
-use \App\Models\Mission;
-use App\Models\Major;
+use \App\Models\Banners;
+use App\Models\Events;
+use App\Models\FeedbacksCategories;
+use App\Models\Feedbacks;
+use \App\Models\Missions;
 use App\Models\GlobalConfig;
+use App\Models\Majors;
 use App\Models\News;
-use App\Models\NewsCategory;
+use App\Models\NewsCategories;
 use App\Models\Voting;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PublicController extends Controller
@@ -31,27 +31,31 @@ class PublicController extends Controller
             ], 404);
         }
 
+        $img1 = $config->img_profile_1
+            ? columnValueToFileObject('img_profile_1', $config->img_profile_1, 'global_config', $config->id)
+            : null;
+
+        $img2 = $config->img_profile_2
+            ? columnValueToFileObject('img_profile_2', $config->img_profile_2, 'global_config', $config->id)
+            : null;
+
         $highlightVoting = Voting::with(['votingCandidate' => function ($query) {
-            $query->where('active', true)
-                ->orderBy('order', 'asc');
-        }])
-            ->where('is_highlight', true)
-            ->latest()
-            ->first();
+            $query->where('active', true)->orderBy('order', 'asc');
+        }])->where('is_highlight', true)->latest()->first();
 
         return response()->json([
             'success' => true,
             'data'    => [
-                'hero_description'  => $config->hero_description,
-                'profile'   => [
+                'hero_description' => $config->hero_description,
+                'profile'          => [
                     'title'       => $config->profile_title,
                     'description' => $config->profile_description,
-                    'img_1'       => $config->img_profile_1,
-                    'img_2'       => $config->img_profile_2,
+                    'img_1'       => $img1?->url,
+                    'img_2'       => $img2?->url,
                 ],
-                'motto'           => $config->motto,
-                'video_profile'   => $config->video_profile,
-                'school_name'     => $config->school_name,
+                'motto'            => $config->motto,
+                'video_profile'    => $config->video_profile,
+                'school_name'      => $config->school_name,
                 'highlight_voting' => $highlightVoting ? [
                     'id'          => $highlightVoting->id,
                     'title'       => $highlightVoting->title,
@@ -63,30 +67,46 @@ class PublicController extends Controller
                             'id'          => $candidate->id,
                             'title'       => $candidate->title,
                             'description' => $candidate->description,
-                            'img_cover'   => $candidate->img_cover,
-                            'order'       => $candidate->order
+                            'img_cover'   => is_array($candidate->img_cover) ? ($candidate->img_cover['url'] ?? null) : $candidate->img_cover,
+                            'order'       => $candidate->order,
                         ];
                     }),
                 ] : null,
-                'footer'    => [
-                    'description'       => $config->footer_description,
-                    'school_telephone'  => $config->school_telephone,
-                    'school_email'      => $config->school_email,
-                    'ig'                => $config->footer_ig,
-                    'yt'                => $config->footer_yt,
-                    'fb'                => $config->footer_fb,
-                    'linkedin'          => $config->footer_linkedin
+                'footer'           => [
+                    'description'      => $config->footer_description,
+                    'school_telephone' => $config->school_telephone,
+                    'school_email'     => $config->school_email,
+                    'ig'               => $config->footer_ig,
+                    'yt'               => $config->footer_yt,
+                    'fb'               => $config->footer_fb,
+                    'linkedin'         => $config->footer_linkedin,
+                    'map_embed_url'    => $config->map_embed_url,
                 ],
             ],
         ]);
     }
 
     // GET Banners aktif
-    public function banner()
+    public function banners()
     {
-        $banners = Banner::where('active', true)
+        $banners = Banners::where('active', true)
             ->orderBy('created_at', 'desc')
             ->get(['id', 'title', 'img_cover', 'url']);
+
+        $banners->transform(function ($banner) {
+            if ($banner->img_cover) {
+                $file = columnValueToFileObject(
+                    'img_cover',
+                    $banner->img_cover,
+                    'banners',
+                    $banner->id
+                );
+
+                $banner->img_cover = $file;
+            }
+
+            return $banner;
+        });
 
         return response()->json([
             'success' => true,
@@ -107,7 +127,7 @@ class PublicController extends Controller
             ], 404);
         }
 
-        $missions = Mission::where('active', 'true')
+        $missions = Missions::where('active', 'true')
             ->orderBy('order', 'asc')
             ->get(['id', 'order', 'content']);
 
@@ -123,7 +143,7 @@ class PublicController extends Controller
     // GET Majors aktif (card)
     public function majorCard()
     {
-        $majors = Major::where('active', true)
+        $majors = Majors::where('active', true)
             ->orderBy('id', 'asc')
             ->get(['id', 'slug', 'img_logo', 'code', 'major_name', 'summary']);
 
@@ -134,15 +154,20 @@ class PublicController extends Controller
         ]);
     }
 
-    // GET Event Publish (card)
-    public function event(Request $request)
+    // GET Events Publish (card, public — no auth)
+    public function events(Request $request)
     {
         $search = $request->query('search');
         $limit  = $request->query('limit');
         $sort   = $request->query('sort', 'asc');
         $sortBy = $request->query('sort_by', 'start_date');
 
-        $query = Event::where('status', 'publish')
+        $allowedSorts = ['id', 'title', 'start_date', 'end_date'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'start_date';
+        }
+
+        $query = Events::where('status', 'publish')
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'ilike', "%{$search}%")
@@ -153,16 +178,24 @@ class PublicController extends Controller
             ->orderBy($sortBy, $sort);
 
         $transform = function ($item) {
+            // Fungsi pembantu agar tanggal pasti berformat 'd M Y'
+            $formatDate = function ($date) {
+                if (!$date) return null;
+                return $date instanceof \DateTimeInterface
+                    ? $date->format('d M Y')
+                    : Carbon::parse($date)->format('d M Y');
+            };
+
             return [
                 'id'           => $item->id,
                 'slug'         => $item->slug,
                 'title'        => $item->title,
                 'content'      => $item->content,
                 'location'     => $item->location,
-                'start_date'   => $item->start_date?->format('d M Y'),
-                'end_date'     => $item->end_date?->format('d M Y'),
+                'start_date'   => $formatDate($item->start_date),
+                'end_date'     => $formatDate($item->end_date),
                 'img_cover'    => $item->img_cover,
-                'is_highlight' => $item->is_highlight,
+                'is_highlight' => (bool) $item->is_highlight,
                 'author'       => $item->createdBy?->fullname ?? 'Admin',
             ];
         };
@@ -180,7 +213,8 @@ class PublicController extends Controller
             ]);
         }
 
-        $events = $query->paginate((int) $limit);
+        $limit = max(1, (int) $limit);
+        $events = $query->paginate($limit);
 
         return response()->json([
             'success'     => true,
@@ -191,7 +225,7 @@ class PublicController extends Controller
         ]);
     }
 
-    // GET Berita publish (card)
+    // GET Berita publish
     public function news(Request $request)
     {
         $search     = $request->query('search');
@@ -207,18 +241,27 @@ class PublicController extends Controller
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
             })
-            ->with('createdBy')
+            ->with('createdBy', 'category')
             ->orderBy($sortBy, $sort);
 
         $transform = function ($item) {
             return [
-                'id'         => $item->id,
-                'slug'       => $item->slug,
-                'title'      => $item->title,
-                'summary'    => $item->content,
-                'img_cover'  => $item->img_cover,
-                'author'     => $item->createdBy?->fullname ?? 'Admin',
-                'created_at' => $item->created_at?->format('d M Y'),
+                'id'            => $item->id,
+                'slug'          => $item->slug,
+                'title'         => $item->title,
+                'category_name' => $item->category && $item->category->active ? $item->category->name : null,
+                'content'       => $item->content,
+
+                // Menggunakan helper global columnValueToFileObject
+                'img_cover'     => $item->img_cover
+                    ? columnValueToFileObject('img_cover', $item->img_cover, 'news', $item->id)
+                    : null,
+
+                'is_highlight'  => $item->is_highlight,
+                'author'        => $item->createdBy?->fullname ?? 'Admin',
+
+                // UBAH BAGIAN INI: Kirim format ISO 8601 agar presisi diparsing Vue (Tanggal & Jam)
+                'created_at'    => $item->created_at?->toIso8601String(),
             ];
         };
 
@@ -250,7 +293,7 @@ class PublicController extends Controller
     {
         $search = $request->query('search');
 
-        $categories = NewsCategory::select('id', 'name', 'description')
+        $categories = NewsCategories::select('id', 'name', 'description')
             ->where('active', true)
             ->when($search, function ($query) use ($search) {
                 $query->where('name', 'ilike', "%{$search}%");
@@ -348,7 +391,7 @@ class PublicController extends Controller
 
         $isAnonymous = filter_var($validated['is_anonymous'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        $feedback = Feedback::create([
+        $feedback = Feedbacks::create([
             'sender_name' => $validated['sender_name'] ?? null,
             'type'        => filter_var($validated['type'], FILTER_VALIDATE_BOOLEAN),
             'category_id' => $validated['category_id'],
@@ -380,7 +423,7 @@ class PublicController extends Controller
         $search = $request->query('search');
         $limit  = $request->query('limit');
 
-        $categories = FeedbackCategory::select('id', 'category_name')
+        $categories = FeedbacksCategories::select('id', 'category_name')
             ->where('active', true)
             ->when($search, function ($query) use ($search) {
                 $query->where('category_name', 'ilike', "%{$search}%");

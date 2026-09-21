@@ -70,7 +70,7 @@ class Edit extends CoreService
 
     public function process($input, $originalInput)
     {
-        return ["a" => $input];
+        // return ["a" => $input];
         $classModel = $input["class_model"];
         $model = $input["model"];
         $object = $classModel::find($input["id"]);

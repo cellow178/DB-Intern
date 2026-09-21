@@ -5,50 +5,50 @@ namespace App\Http\Controllers;
 use App\CoreService\CallService;
 use Illuminate\Http\Request;
 
-class MajorCompetentController extends Controller
+class BannersController extends Controller
 {
-    // GET List
+    // GET Banner list
     public function index(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'major_competent';
-        $input['limit'] = $input['limit'] ?? 10;
+        $input['model'] = 'banners';
+        $input['limit']   = $input['limit'] ?? 10;
 
         return CallService::run('Get', $input);
     }
 
-    // GET Detail (Show) by ID
+    // GET Banner detail (Show) by ID
     public function show(int $id)
     {
         return CallService::run('Find', [
             'id'    => $id,
-            'model' => 'major_competent',
+            'model' => 'banners',
         ]);
     }
 
-    // POST Create
+    // POST Create Banner
     public function create(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'major_competent';
+        $input['model'] = 'banners';
 
         return CallService::run('Add', $input);
     }
 
-    // PUT Update
+    // PUT Update Banner
     public function update(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'major_competent';
+        $input['model'] = 'banners';
 
         return CallService::run('Edit', $input);
     }
 
-    // DELETE Delete
+    // DELETE Delete Banner
     public function destroy(Request $request)
     {
         $input = $request->all();
-        $input['model'] = 'major_competent';
+        $input['model'] = 'banners';
 
         return CallService::run('Delete', $input);
     }

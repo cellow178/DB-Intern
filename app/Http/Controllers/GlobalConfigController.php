@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\CoreService\CallService;
 use App\Models\GlobalConfig;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 class GlobalConfigController extends Controller
 {
     // GET Global Config detail
     public function show()
     {
-        $config = GlobalConfig::with(['createdBy', 'updatedBy'])->first();
+        $config = GlobalConfig::first();
 
         if (!$config) {
             return response()->json([
@@ -21,9 +20,9 @@ class GlobalConfigController extends Controller
             ], 404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data'    => $this->formatDetail($config),
+        return CallService::run('Find', [
+            'id'    => $config->id,
+            'model' => 'global_config',
         ]);
     }
 
@@ -39,105 +38,12 @@ class GlobalConfigController extends Controller
             ], 404);
         }
 
-        try {
-            $validated = $request->validate([
-                'hero_description'    => ['required', 'string', 'max:100'],
-                'profile_title'       => ['required', 'string'],
-                'profile_description' => ['required', 'string'],
-                'img_profile_1'       => ['required', 'string'],
-                'img_profile_2'       => ['nullable', 'string'],
-                'school_vision'       => ['required', 'string'],
-                'video_profile'       => ['required', 'string'],
-                'school_name'         => ['required', 'string', 'max:150'],
-                'footer_description'  => ['nullable', 'string'],
-                'motto'               => ['required', 'string', 'max:100'],
-                'school_telephone'    => ['required', 'string', 'max:150'],
-                'school_email'        => ['required', 'email'],
-                'footer_ig'           => ['nullable', 'string'],
-                'footer_yt'           => ['nullable', 'string'],
-                'footer_fb'           => ['nullable', 'string'],
-                'footer_linkedin'     => ['nullable', 'string'],
-            ], [
-                'hero_description.required'    => 'Deskripsi hero wajib diisi.',
-                'hero_description.max'         => 'Deskripsi hero maksimal 100 karakter.',                
-                'profile_title.required'       => 'Judul profil wajib diisi.',
-                'profile_description.required' => 'Deskripsi profil wajib diisi.',
-                'img_profile_1.required'       => 'Gambar profil 1 wajib diisi.',
-                'img_profile_2.required'       => 'Gambar profil 2 wajib diisi.',
-                'school_vision.required'       => 'Visi sekolah wajib diisi.',
-                'video_profile.required'       => 'Video profil wajib diisi.',
-                'school_name.required'         => 'Nama sekolah wajib diisi.',
-                'school_name.max'              => 'Nama sekolah maksimal 150 karakter.',
-                'footer_description.required'  => 'Deskripsi footer wajib diisi.',
-                'motto.required'               => 'Motto wajib diisi.',
-                'motto.max'                    => 'Motto maksimal 100 karakter.',
-                'school_telephone.required'    => 'Telepon sekolah wajib diisi.',
-                'school_telephone.max'         => 'Telepon sekolah maksimal 150 karakter.',
-                'school_email.required'        => 'Email sekolah wajib diisi.',
-                'school_email.email'           => 'Format email tidak valid.',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal.',
-                'errors'  => $e->errors(),
-            ], 422);
-        }
-
-        $config->update([
-            'hero_description'    => $validated['hero_description'],
-            'profile_title'       => $validated['profile_title'],
-            'profile_description' => $validated['profile_description'],
-            'img_profile_1'       => $validated['img_profile_1'],
-            'img_profile_2'       => $validated['img_profile_2'],
-            'school_vision'       => $validated['school_vision'],
-            'video_profile'       => $validated['video_profile'],
-            'school_name'         => $validated['school_name'],
-            'footer_description'  => $validated['footer_description'],
-            'motto'               => $validated['motto'],
-            'school_telephone'    => $validated['school_telephone'],
-            'school_email'        => $validated['school_email'],
-            'footer_ig'           => $validated['footer_ig'] ?? $config->footer_ig,
-            'footer_yt'           => $validated['footer_yt'] ?? $config->footer_yt,
-            'footer_fb'           => $validated['footer_fb'] ?? $config->footer_fb,
-            'footer_linkedin'     => $validated['footer_linkedin'] ?? $config->footer_linkedin,
-            'updated_by'          => Auth::id(),
+        $input = array_merge($request->all(), [
+            'id'            => $config->id,
+            'model'         => 'global_config',
+            'img_profile_2' => $request->input('img_profile_2') ?: null,
         ]);
 
-        $config->load(['createdBy', 'updatedBy']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Konfigurasi global berhasil diperbarui.',
-            'data'    => $this->formatDetail($config),
-        ]);
-    }
-
-    // Helper format response
-    private function formatDetail(GlobalConfig $config): array
-    {
-        return [
-            'id'                  => $config->id,
-            'hero_description'    => $config->hero_description,
-            'profile_title'       => $config->profile_title,
-            'profile_description' => $config->profile_description,
-            'img_profile_1'       => $config->img_profile_1,
-            'img_profile_2'       => $config->img_profile_2,
-            'school_vision'       => $config->school_vision,
-            'video_profile'       => $config->video_profile,
-            'school_name'         => $config->school_name,
-            'footer_description'  => $config->footer_description,
-            'motto'               => $config->motto,
-            'school_telephone'    => $config->school_telephone,
-            'school_email'        => $config->school_email,
-            'footer_ig'           => $config->footer_ig,
-            'footer_yt'           => $config->footer_yt,
-            'footer_fb'           => $config->footer_fb,
-            'footer_linkedin'     => $config->footer_linkedin,
-            'created_by_fullname' => $config->createdBy?->fullname,
-            'created_at'          => $config->created_at?->format('Y-m-d H:i:s'),
-            'updated_by_fullname' => $config->updatedBy?->fullname,
-            'updated_at'          => $config->updated_at?->format('Y-m-d H:i:s'),
-        ];
+        return CallService::run('Edit', $input);
     }
 }

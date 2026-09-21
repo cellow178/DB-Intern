@@ -1,17 +1,17 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BannerController;
+use App\Http\Controllers\BannersController;
 use App\Http\Controllers\CrudController;
-use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventsController;
 // use App\Http\Controllers\CustomController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\MissionController;
-use App\Http\Controllers\MajorController;
+use App\Http\Controllers\MajorsController;
 use App\Http\Controllers\NewsController;
-use App\Http\Controllers\NewsCategoryController;
-use App\Http\Controllers\FeedbackCategoryController;
-use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\NewsCategoriesController;
+use App\Http\Controllers\FeedbacksController;
+use App\Http\Controllers\FeedbacksCategoriesController;
 use App\Http\Controllers\GlobalConfigController;
 use App\Http\Controllers\MajorCompetentController;
 use App\Http\Controllers\PublicController;
@@ -32,10 +32,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/no-auth/global-config', [PublicController::class, 'globalConfig']);
-Route::get('/no-auth/banners', [PublicController::class, 'banner']);
+Route::get('/no-auth/banners', [PublicController::class, 'banners']);
 Route::get('/no-auth/vision-mission', [PublicController::class, 'visionMission']);
 Route::get('/no-auth/majors', [PublicController::class, 'majorCard']);
-Route::get('/no-auth/events', [PublicController::class, 'event']);
+Route::get('/no-auth/events', [PublicController::class, 'events']);
 Route::get('/no-auth/news', [PublicController::class, 'news']);
 Route::get('/no-auth/news-categories', [PublicController::class, 'newsCategories']);
 Route::get('/no-auth/votings', [PublicController::class, 'voting']);
@@ -47,11 +47,11 @@ Route::group([
 ], function () {
 
     // Banners
-    Route::get('/banners', [BannerController::class, 'index']);
-    Route::get('/banners/{id}', [BannerController::class, 'show']);
-    Route::post('/banners/create', [BannerController::class, 'create']);
-    Route::put('/banners/update', [BannerController::class, 'update']);
-    Route::delete('/banners/delete', [BannerController::class, 'destroy']);
+    Route::get('/banners', [BannersController::class, 'index']);
+    Route::get('/banners/{id}', [BannersController::class, 'show']);
+    Route::post('/banners/create', [BannersController::class, 'create']);
+    Route::put('/banners/update', [BannersController::class, 'update']);
+    Route::delete('/banners/delete', [BannersController::class, 'destroy']);
 
     // Missions
     Route::get('/missions', [MissionController::class, 'index']);
@@ -63,13 +63,13 @@ Route::group([
     Route::delete('/missions/delete', [MissionController::class, 'destroy']);
 
     // Majors
-    Route::get('/majors', [MajorController::class, 'index']);
-    Route::get('/majors/dataset', [MajorController::class, 'dataset']);
-    Route::get('/majors/{id}', [MajorController::class, 'show']);
-    Route::post('/majors/create', [MajorController::class, 'create']);
-    Route::put('/majors/update', [MajorController::class, 'update']);
-    Route::post('/majors/update-status', [MajorController::class, 'updateStatus']);
-    Route::delete('/majors/delete', [MajorController::class, 'destroy']);
+    Route::get('/majors', [MajorsController::class, 'index']);
+    Route::get('/majors/dataset', [MajorsController::class, 'dataset']);
+    Route::get('/majors/{id}', [MajorsController::class, 'show']);
+    Route::post('/majors/create', [MajorsController::class, 'create']);
+    Route::put('/majors/update', [MajorsController::class, 'update']);
+    Route::post('/majors/update-status', [MajorsController::class, 'updateStatus']);
+    Route::delete('/majors/delete', [MajorsController::class, 'destroy']);
 
     // Major Competents
     Route::get('/major-competents', [MajorCompetentController::class, 'index']);
@@ -78,12 +78,12 @@ Route::group([
     Route::delete('/major-competents/delete', [MajorCompetentController::class, 'destroy']);
 
     // Events
-    Route::get('/events', [EventController::class, 'index']);
-    Route::get('/events/{id}', [EventController::class, 'show']);
-    Route::post('/events/create', [EventController::class, 'create']);
-    Route::put('/events/update', [EventController::class, 'update']);
-    Route::post('/events/update-highlight', [EventController::class, 'updateHighlight']);
-    Route::delete('/events/delete', [EventController::class, 'destroy']);
+    Route::get('/events', [EventsController::class, 'index']);
+    Route::get('/events/{id}', [EventsController::class, 'show']);
+    Route::post('/events/create', [EventsController::class, 'create']);
+    Route::put('/events/update', [EventsController::class, 'update']);
+    Route::post('/events/update-highlight', [EventsController::class, 'updateHighlight']);
+    Route::delete('/events/delete', [EventsController::class, 'destroy']);
 
     // News
     Route::get('/news', [NewsController::class, 'index']);
@@ -95,12 +95,12 @@ Route::group([
     Route::delete('/news/delete', [NewsController::class, 'destroy']);
 
     // News Category
-    Route::get('/news-categories', [NewsCategoryController::class, 'index']);
-    Route::get('/news-categories/dataset', [NewsCategoryController::class, 'dataset']);
-    Route::get('/news-categories/{id}', [NewsCategoryController::class, 'show']);
-    Route::post('/news-categories/create', [NewsCategoryController::class, 'create']);
-    Route::put('/news-categories/update', [NewsCategoryController::class, 'update']);
-    Route::delete('/news-categories/delete', [NewsCategoryController::class, 'destroy']);
+    Route::get('/news-categories', [NewsCategoriesController::class, 'index']);
+    Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
+    Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show']);
+    Route::post('/news-categories/create', [NewsCategoriesController::class, 'create']);
+    Route::put('/news-categories/update', [NewsCategoriesController::class, 'update']);
+    Route::delete('/news-categories/delete', [NewsCategoriesController::class, 'destroy']);
 
     // Votings
     Route::get('/votings', [VotingController::class, 'index']);
@@ -115,20 +115,20 @@ Route::group([
     Route::get('/voting-candidates/{id}', [VotingCandidateController::class, 'show']);
     Route::post('/voting-candidates/create', [VotingCandidateController::class, 'create']);
     Route::put('/voting-candidates/update', [VotingCandidateController::class, 'update']);
-    Route::delete('/voting-candidates/delete', [VotingCandidateController::class, 'destroy']);    
+    Route::delete('/voting-candidates/delete', [VotingCandidateController::class, 'destroy']);
 
     // Feedback
-    Route::get('/feedbacks', [FeedbackController::class, 'index']);
-    Route::get('/feedbacks/{id}', [FeedbackController::class, 'show']);
-    Route::delete('/feedbacks/delete', [FeedbackController::class, 'destroy']);
+    Route::get('/feedbacks', [FeedbacksController::class, 'index']);
+    Route::get('/feedbacks/{id}', [FeedbacksController::class, 'show']);
+    Route::delete('/feedbacks/delete', [FeedbacksController::class, 'destroy']);
 
     // Feedbacks Category
-    Route::get('/feedbacks-categories', [FeedbackCategoryController::class, 'index']);
-    Route::get('/feedbacks-categories/dataset', [FeedbackCategoryController::class, 'dataset']);
-    Route::get('/feedbacks-categories/{id}', [FeedbackCategoryController::class, 'show']);
-    Route::post('/feedbacks-categories/create', [FeedbackCategoryController::class, 'create']);
-    Route::put('/feedbacks-categories/update', [FeedbackCategoryController::class, 'update']);
-    Route::delete('/feedbacks-categories/delete', [FeedbackCategoryController::class, 'destroy']);
+    Route::get('/feedbacks-categories', [FeedbacksCategoriesController::class, 'index']);
+    Route::get('/feedbacks-categories/dataset', [FeedbacksCategoriesController::class, 'dataset']);
+    Route::get('/feedbacks-categories/{id}', [FeedbacksCategoriesController::class, 'show']);
+    Route::post('/feedbacks-categories/create', [FeedbacksCategoriesController::class, 'create']);
+    Route::put('/feedbacks-categories/update', [FeedbacksCategoriesController::class, 'update']);
+    Route::delete('/feedbacks-categories/delete', [FeedbacksCategoriesController::class, 'destroy']);
 
     // Global Config
     Route::get('/global-config/show', [GlobalConfigController::class, 'show']);
@@ -142,7 +142,7 @@ Route::group([
     Route::delete('/{model}/{id}', [CrudController::class, 'delete']);
     Route::get('/{model}/{id}', [CrudController::class, 'show']);
 
-    // Route::post('upload', [UploadController::class, 'upload'])->name("upload")->middleware('auth.rest');
+    Route::post('file/upload', [UploadController::class, 'upload'])->name("upload")->middleware('auth.rest');
 
 
     Route::get('/gen-lang/lang', [CrudController::class, 'lang']);
