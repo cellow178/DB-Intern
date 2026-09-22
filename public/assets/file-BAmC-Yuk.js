@@ -1,0 +1,1 @@
+var e=e=>{if(!e)return null;let t=``;if(t=typeof e==`object`?e.url||e.field_value||``:e,!t)return null;if(t.startsWith(`http://`)||t.startsWith(`https://`))return t;let n=`http://localhost:8000/api`.replace(/\/api\/?$/,``)||`http://127.0.0.1:8000`,r=t.replace(/^\/+/,``);return r.startsWith(`api/`)||r.startsWith(`storage/`)?`${n}/${r}`:`${n}/storage/${r}`};export{e as t};

@@ -1,0 +1,1 @@
+import{$t as e,At as t,Ft as n,Lt as r,Nt as i,Ut as a,ht as o,nn as s}from"./vendor-vue-CmaMH-HM.js";var c={class:`text-text-alt`},l=r({__name:`PlaceholderView`,setup(r){let l=o();return(r,o)=>(a(),i(`div`,c,[o[0]||=n(` Halaman `,-1),t(`strong`,null,s(e(l).name),1),o[1]||=n(` belum dibuat. `,-1)]))}});export{l as default};

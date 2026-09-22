@@ -1,0 +1,1 @@
+import{At as e,Nt as t,Ut as n}from"./vendor-vue-CmaMH-HM.js";import{n as r}from"./index-BHqxOSMn.js";var i={};function a(r,i){return n(),t(`div`,null,[...i[0]||=[e(`h1`,{class:`text-2xl font-bold text-text-neutral`},`Selamat datang, Admin!`,-1)]])}var o=r(i,[[`render`,a]]);export{o as default};

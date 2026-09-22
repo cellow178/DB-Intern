@@ -1,0 +1,1 @@
+import{At as e,Nt as t,Ut as n}from"./vendor-vue-CmaMH-HM.js";import{n as r}from"./index-BHqxOSMn.js";var i={},a={class:`about`};function o(r,i){return n(),t(`div`,a,[...i[0]||=[e(`h1`,null,`This is a major detail page`,-1)]])}var s=r(i,[[`render`,o]]);export{s as default};

@@ -1,1 +1,0 @@
-import{dt as e,yt as t}from"./vendor-BjjboA1Q.js";import{t as n}from"./index-CO8fchBz.js";var r={};function i(n,r){return t(),e(`p`,null,`dashboard`)}var a=n(r,[[`render`,i]]);export{a as default};
