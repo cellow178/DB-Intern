@@ -16,6 +16,8 @@ use Carbon\Carbon;
 
 class Majors extends Model
 {
+    use HasFactory;
+
     protected $table = 'majors';
     protected $dateFormat = 'c';
     protected $fillable = [
@@ -233,12 +235,36 @@ class Majors extends Model
     const CUSTOM_LIST_FILTER = [];
     const FIELD_CASTING = [];
     const FIELD_VALIDATION_DATA = [];
-    const CHILD_TABLE = [];
+    const CHILD_TABLE = [
+        "major_competent" => [
+            "foreignField" => "major_id"
+        ],
+        "major_gallery" => [
+            "foreignField" => "major_id"
+        ]
+    ];
     const MAPPING_MULTIPLE_ADD = [];
+
+    // Relasi Kompetensi
+    public function competencies(): HasMany
+    {
+        return $this->hasMany(MajorCompetent::class, 'major_id');
+    }
 
     public function competent(): HasMany
     {
-        return $this->hasMany(MajorCompetent::class, 'major_id');
+        return $this->competencies();
+    }
+
+    // Relasi Galeri
+    public function galleries(): HasMany
+    {
+        return $this->hasMany(MajorGallery::class, 'major_id');
+    }
+
+    public function gallery(): HasMany
+    {
+        return $this->galleries();
     }
 
     public function createdBy()
@@ -253,6 +279,9 @@ class Majors extends Model
 
     public static function beforeInsert(array $input): array
     {
+        $input['child_data_major_competent'] = $input['child_data_major_competent'] ?? [];
+        $input['child_data_major_gallery'] = $input['child_data_major_gallery'] ?? [];
+
         if (empty($input['slug']) && !empty($input['major_name'])) {
             $baseSlug = Str::slug($input['major_name']);
             $slug = $baseSlug;
@@ -275,6 +304,9 @@ class Majors extends Model
 
     public static function beforeUpdate(array $input): array
     {
+        $input['child_data_major_competent'] = $input['child_data_major_competent'] ?? [];
+        $input['child_data_major_gallery'] = $input['child_data_major_gallery'] ?? [];
+
         if (empty($input['slug']) && !empty($input['major_name'])) {
             $baseSlug = Str::slug($input['major_name']);
             $slug = $baseSlug;

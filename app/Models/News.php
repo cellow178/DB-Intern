@@ -40,7 +40,8 @@ class News extends Model
         "is_highlight",
         "created_by",
         "updated_by",
-        "created_at"
+        "created_at",
+        "updated_at"
     ];
     const FIELD_ADD = [
         "category_id",

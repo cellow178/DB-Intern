@@ -15,7 +15,10 @@ class NewsController extends Controller
     {
         $input = $request->all();
         $input['model'] = 'news';
-        $input['limit']   = $input['limit'] ?? 10;
+        $input['limit'] = $input['limit'] ?? 10;
+
+        $input['sort_by'] = $input['sort_by'] ?? 'updated_at';
+        $input['sort']    = $input['sort'] ?? 'desc';
 
         return CallService::run('Get', $input);
     }
@@ -54,6 +57,16 @@ class NewsController extends Controller
     {
         $input = $request->all();
         $input['model'] = 'news';
+
+        // Deteksi jika gambar dihapus/dikosongkan dari frontend
+        if (empty($input['img_cover']) || $input['img_cover'] === 'null') {
+
+            // 1. Force update langsung ke DB mengabaikan CallService
+            News::where('id', $input['id'])->update(['img_cover' => null]);
+
+            // 2. Buang key img_cover agar CallService tidak mencoba memproses file yang tidak ada
+            unset($input['img_cover']);
+        }
 
         return CallService::run('Edit', $input);
     }

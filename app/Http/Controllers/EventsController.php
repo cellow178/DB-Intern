@@ -10,17 +10,18 @@ use Illuminate\Validation\ValidationException;
 
 class EventsController extends Controller
 {
-    // GET Event list
     public function index(Request $request)
     {
         $input = $request->all();
         $input['model'] = 'events';
-        $input['limit']   = $input['limit'] ?? 10;
+        $input['limit'] = $input['limit'] ?? 10;
+
+        $input['sort_by'] = $request->input('sort_by', 'start_date');
+        $input['sort']    = $request->input('sort', 'asc');
 
         return CallService::run('Get', $input);
     }
 
-    // GET Event detail (Show) by ID
     public function show(int $id)
     {
         return CallService::run('Find', [
@@ -29,7 +30,6 @@ class EventsController extends Controller
         ]);
     }
 
-    // POST Create event
     public function create(Request $request)
     {
         $input = $request->all();
@@ -38,16 +38,22 @@ class EventsController extends Controller
         return CallService::run('Add', $input);
     }
 
-    // PUT Update event
     public function update(Request $request)
     {
         $input = $request->all();
         $input['model'] = 'events';
 
+        // IF frontend img_cover set null
+        if (empty($input['img_cover']) || $input['img_cover'] === 'null') {
+            Events::where('id', $input['id'])->update(['img_cover' => null]);
+
+            //Buang key img_cover agar CallService tidak mencoba memproses file yang tidak ada
+            unset($input['img_cover']);
+        }
+
         return CallService::run('Edit', $input);
     }
 
-    // POST Update highlight event custom
     public function updateHighlight(Request $request)
     {
         try {
@@ -94,7 +100,6 @@ class EventsController extends Controller
         ]);
     }
 
-    // DELETE Delete event
     public function destroy(Request $request)
     {
         $input = $request->all();

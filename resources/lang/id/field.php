@@ -2,13 +2,10 @@
 
 return [
     "id" => "Id",
-    "category_id" => "Category Id",
-    "slug" => "Slug",
-    "title" => "Title",
-    "content" => "Content",
+    "major_id" => "Major Id",
     "img_cover" => "Img Cover",
-    "status" => "Status",
-    "is_highlight" => "Is Highlight",
+    "description" => "Description",
+    "active" => "Active",
     "created_by" => "Created By",
     "updated_by" => "Updated By",
     "created_at" => "Created At",

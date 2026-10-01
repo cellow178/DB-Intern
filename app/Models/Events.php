@@ -10,12 +10,29 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 
 class Events extends Model
 {
     protected $table = 'events';
     protected $dateFormat = 'c';
+
+    protected $fillable = [
+        'slug',
+        'title',
+        'content',
+        'location',
+        'start_date',
+        'end_date',
+        'img_cover',
+        'status',
+        'is_highlight',
+        'created_by',
+        'updated_by',
+    ];
+
     const TABLE = "events";
     const FILEROOT = "/events";
     const IS_LIST = true;
@@ -27,7 +44,6 @@ class Events extends Model
         "id",
         "slug",
         "title",
-        "content",
         "location",
         "start_date",
         "end_date",
@@ -198,15 +214,15 @@ class Events extends Model
     const CUSTOM_RELATION = [];
     const CUSTOM_SELECT = "";
     const FIELD_VALIDATION = [
-        "slug" => "required|string|max:255",
+        "slug" => "nullable|string|max:255",
         "title" => "required|string|max:255",
         "content" => "required|string",
         "location" => "required|string|max:255",
         "start_date" => "required",
         "end_date" => "required",
-        "img_cover" => "nullable|string|exists_file",
+        "img_cover" => "nullable|string",
         "status" => "required|string|max:255",
-        "is_highlight" => "required",
+        "is_highlight" => "nullable",
         "created_by" => "nullable|integer",
         "updated_by" => "nullable|integer",
         "created_at" => "nullable|date",
@@ -247,8 +263,11 @@ class Events extends Model
 
     public static function beforeInsert(array $input): array
     {
-        if (!empty($input['title'])) {
-            $slug = \Illuminate\Support\Str::slug($input['title']);
+        $slugInput = $input['slug'] ?? null;
+        $titleInput = $input['title'] ?? null;
+
+        if (empty($slugInput) && !empty($titleInput)) {
+            $slug = \Illuminate\Support\Str::slug($titleInput);
             $originalSlug = $slug;
             $count = 1;
 
@@ -269,8 +288,11 @@ class Events extends Model
 
     public static function beforeUpdate(array $input): array
     {
-        if (!empty($input['title'])) {
-            $baseSlug = \Illuminate\Support\Str::slug($input['title']);
+        $slugInput = $input['slug'] ?? null;
+        $titleInput = $input['title'] ?? null;
+
+        if (empty($slugInput) && !empty($titleInput)) {
+            $baseSlug = \Illuminate\Support\Str::slug($titleInput);
             $slug = $baseSlug;
             $counter = 1;
             $id = $input['id'] ?? null;

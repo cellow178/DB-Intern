@@ -24,11 +24,15 @@ class ArchiveExpiredEvents extends Command
 
     public function handle()
     {
-        $cutoffDate = Carbon::now()->subDays(3)->toDateString();
+        $cutoffDate = Carbon::now()->subDays(1)->toDateString();
 
+        // TAMBAHAN: Set is_highlight jadi false saat di-archive
         $affected = Events::where('status', 'publish')
             ->whereDate('end_date', '<', $cutoffDate)
-            ->update(['status' => 'archive']);
+            ->update([
+                'status'       => 'archive',
+                'is_highlight' => false, // <-- Solusinya di sini
+            ]);
 
         $this->info("Berhasil mengarsipkan {$affected} event.");
     }

@@ -73,44 +73,6 @@ class MajorsController extends Controller
         return CallService::run('Edit', $input);
     }
 
-    // POST Update tatus
-    public function updateStatus(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'id' => ['required', 'integer', 'exists:majors,id'],
-            ], [
-                'id.required' => 'ID jurusan wajib diisi.',
-                'id.integer'  => 'ID jurusan harus berupa angka.',
-                'id.exists'   => 'Jurusan tidak ditemukan.',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal.',
-                'errors'  => $e->errors(),
-            ], 422);
-        }
-
-        $major = Majors::find($validated['id']);
-
-        $major->update([
-            'active'     => !$major->active,
-            'updated_by' => Auth::id(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => "Status jurusan '{$major->major_name}' berhasil diperbarui.",
-            'data'    => [
-                'id'         => $major->id,
-                'code'       => $major->code,
-                'major_name' => $major->major_name,
-                'active'     => $major->active,
-            ],
-        ]);
-    }
-
     // DELETE Delete
     public function destroy(Request $request)
     {

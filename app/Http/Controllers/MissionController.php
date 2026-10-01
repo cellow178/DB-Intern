@@ -60,43 +60,6 @@ class MissionController extends Controller
         return CallService::run('Edit', $input);
     }
 
-    // POST Toggle status (aktif/nonaktif)
-    public function updateStatus(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'id' => ['required', 'integer', 'exists:missions,id'],
-            ], [
-                'id.required' => 'ID misi wajib diisi.',
-                'id.integer'  => 'ID misi harus berupa angka.',
-                'id.exists'   => 'Misi tidak ditemukan.',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal.',
-                'errors'  => $e->errors(),
-            ], 422);
-        }
-
-        $mission = Missions::find($validated['id']);
-
-        $mission->update([
-            'active'     => !$mission->active,
-            'updated_by' => Auth::id(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status misi berhasil diperbarui.',
-            'data'    => [
-                'id'      => $mission->id,
-                'content' => $mission->content,
-                'active'  => $mission->active,
-            ],
-        ]);
-    }
-
     // DELETE Delete mission
     public function destroy(Request $request)
     {

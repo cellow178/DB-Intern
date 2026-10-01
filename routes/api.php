@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BannersController;
 use App\Http\Controllers\CrudController;
 use App\Http\Controllers\EventsController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\EventsController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\MissionController;
 use App\Http\Controllers\MajorsController;
+use App\Http\Controllers\MajorGalleryController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsCategoriesController;
 use App\Http\Controllers\FeedbacksController;
@@ -35,6 +37,7 @@ Route::get('/no-auth/global-config', [PublicController::class, 'globalConfig']);
 Route::get('/no-auth/banners', [PublicController::class, 'banners']);
 Route::get('/no-auth/vision-mission', [PublicController::class, 'visionMission']);
 Route::get('/no-auth/majors', [PublicController::class, 'majorCard']);
+Route::get('/no-auth/majors/{slug}', [PublicController::class, 'majorDetail']);
 Route::get('/no-auth/events', [PublicController::class, 'events']);
 Route::get('/no-auth/news', [PublicController::class, 'news']);
 Route::get('/no-auth/news-categories', [PublicController::class, 'newsCategories']);
@@ -45,6 +48,9 @@ Route::get('/no-auth/feedback-categories', [PublicController::class, 'feedbackCa
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
+
+    // Dashboard
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
     // Banners
     Route::get('/banners', [BannersController::class, 'index']);
@@ -73,9 +79,17 @@ Route::group([
 
     // Major Competents
     Route::get('/major-competents', [MajorCompetentController::class, 'index']);
+    Route::get('major-competents/{id}', [MajorCompetentController::class, 'show']);
     Route::post('/major-competents/create', [MajorCompetentController::class, 'create']);
     Route::put('/major-competents/update', [MajorCompetentController::class, 'update']);
     Route::delete('/major-competents/delete', [MajorCompetentController::class, 'destroy']);
+
+    // Major Gallery
+    Route::get('major-gallery', [MajorGalleryController::class, 'index']);
+    Route::get('major-gallery/{id}', [MajorGalleryController::class, 'show']);
+    Route::post('major-gallery/create', [MajorGalleryController::class, 'create']);
+    Route::put('major-gallery/update', [MajorGalleryController::class, 'update']);
+    Route::delete('major-gallery/delete', [MajorGalleryController::class, 'delete']);
 
     // Events
     Route::get('/events', [EventsController::class, 'index']);

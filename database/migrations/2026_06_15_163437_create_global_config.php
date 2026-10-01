@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('img_profile_1');
             $table->text('img_profile_2')->nullable();
             $table->text('school_vision');
-            $table->text('video_profile');
+            $table->text('video_profile')->nullable();
             $table->string('school_name', 150);
             $table->string('footer_description')->nullable();
             $table->string('motto', 100);
@@ -29,6 +29,7 @@ return new class extends Migration
             $table->text('footer_yt')->nullable();
             $table->text('footer_fb')->nullable();
             $table->text('footer_linkedin')->nullable();
+            $table->text('map_embed')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);

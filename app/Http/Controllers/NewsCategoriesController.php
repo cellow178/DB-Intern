@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\NewsCategories;
+use App\Models\News;
 use App\CoreService\CallService;
 use Illuminate\Http\Request;
 
@@ -72,6 +73,14 @@ class NewsCategoriesController extends Controller
     // DELETE
     public function destroy(Request $request)
     {
+        $id = $request->input('id');
+
+        if ($id) {
+            News::where('category_id', $id)->update([
+                'category_id' => null
+            ]);
+        }
+
         $input = $request->all();
         $input['model'] = 'news_categories';
 

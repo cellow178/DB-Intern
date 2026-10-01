@@ -1,5 +1,5 @@
 <?php 
 
 return [
-    "news" => "News",
+    "major_gallery" => "Major Gallery",
 ];

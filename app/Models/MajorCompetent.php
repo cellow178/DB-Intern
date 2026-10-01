@@ -100,8 +100,8 @@ class MajorCompetent extends Model
             "aliasTable" => "B",
             "linkField" => "id",
             "displayName" => "rel_major_id",
-            "selectFields" => ["id"],
-            "selectValue" => "id AS rel_major_id"
+            "selectFields" => ["id", "code", "major_name"],
+            "selectValue" => "id AS rel_major_id, B.code AS rel_major_code, B.major_name AS rel_major_name"
         ],
         "created_by" => [
             "linkTable" => "users",
@@ -120,6 +120,7 @@ class MajorCompetent extends Model
             "selectValue" => "id AS rel_updated_by"
         ],
     ];
+    
     const CUSTOM_RELATION = [];
     const CUSTOM_SELECT = "";
     const FIELD_VALIDATION = [
@@ -157,13 +158,6 @@ class MajorCompetent extends Model
 
     public static function beforeInsert(array $input): array
     {
-        if (!empty($input['major_id'])) {
-            $major = Majors::find($input['major_id']);
-            if (!$major || !$major->active) {
-                throw new CoreException('ID jurusan tidak ditemukan atau tidak aktif.');
-            }
-        }
-
         return $input;
     }
 
@@ -174,13 +168,6 @@ class MajorCompetent extends Model
 
     public static function beforeUpdate(array $input): array
     {
-        if (!empty($input['major_id'])) {
-            $major = Majors::find($input['major_id']);
-            if (!$major || !$major->active) {
-                throw new CoreException('ID jurusan tidak ditemukan atau tidak aktif.');
-            }
-        }
-
         return $input;
     }
 

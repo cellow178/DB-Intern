@@ -27,6 +27,7 @@ class GlobalConfig extends Model
         'footer_yt',
         'footer_fb',
         'footer_linkedin',
+        'map_embed',
         'created_by',
         'updated_by'
     ];
@@ -57,6 +58,7 @@ class GlobalConfig extends Model
         "footer_yt",
         "footer_fb",
         "footer_linkedin",
+        "map_embed",
         "created_by",
         "updated_by",
         "created_at",
@@ -80,6 +82,7 @@ class GlobalConfig extends Model
         "footer_yt",
         "footer_fb",
         "footer_linkedin",
+        "map_embed",
         "created_by",
         "updated_by"
     ];
@@ -101,6 +104,7 @@ class GlobalConfig extends Model
         "footer_yt",
         "footer_fb",
         "footer_linkedin",
+        "map_embed",
         "updated_by"
     ];
 
@@ -122,6 +126,7 @@ class GlobalConfig extends Model
         "footer_yt",
         "footer_fb",
         "footer_linkedin",
+        "map_embed",
         "created_by",
         "updated_by",
         "created_at",
@@ -158,6 +163,7 @@ class GlobalConfig extends Model
         "footer_yt"           => "text",
         "footer_fb"           => "text",
         "footer_linkedin"     => "text",
+        "map_embed"           => "text",
         "created_by"          => "bigint",
         "updated_by"          => "bigint",
         "created_at"          => "timestamp_with_time_zone",
@@ -193,9 +199,9 @@ class GlobalConfig extends Model
         "profile_title"       => "required|string",
         "profile_description" => "required|string",
         "img_profile_1"       => "required|string|exists_file",
-        "img_profile_2"       => "nullable",
+        "img_profile_2"       => "nullable|string",
         "school_vision"       => "required|string",
-        "video_profile"       => "required|string",
+        "video_profile"       => "nullable|string",
         "school_name"         => "required|string|max:150",
         "footer_description"  => "nullable|string",
         "motto"               => "required|string|max:100",
@@ -205,6 +211,7 @@ class GlobalConfig extends Model
         "footer_yt"           => "nullable|string",
         "footer_fb"           => "nullable|string",
         "footer_linkedin"     => "nullable|string",
+        "map_embed"           => "nullable|string",
     ];
 
     const PARENT_CHILD = [];
@@ -245,8 +252,21 @@ class GlobalConfig extends Model
             ]);
         }
 
+        if (array_key_exists('video_profile', $input) && empty($input['video_profile'])) {
+            self::where('id', $object->id)->update([
+                'video_profile' => null
+            ]);
+        }
+
+        if (array_key_exists('map_embed', $input) && empty($input['map_embed'])) {
+            self::where('id', $object->id)->update([
+                'map_embed' => null
+            ]);
+        }
+
         return $input;
     }
+
     public static function beforeDelete(array $input)
     {
         return $input;

@@ -42,6 +42,8 @@ class GlobalConfigController extends Controller
             'id'            => $config->id,
             'model'         => 'global_config',
             'img_profile_2' => $request->input('img_profile_2') ?: null,
+            'video_profile' => $request->input('video_profile') ?: null,
+            'map_embed'     => $request->input('map_embed') ?: null,
         ]);
 
         return CallService::run('Edit', $input);

@@ -11,7 +11,6 @@ use App\Models\GlobalConfig;
 use App\Models\Majors;
 use App\Models\News;
 use App\Models\NewsCategories;
-use App\Models\Voting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,9 +38,6 @@ class PublicController extends Controller
             ? columnValueToFileObject('img_profile_2', $config->img_profile_2, 'global_config', $config->id)
             : null;
 
-        $highlightVoting = Voting::with(['votingCandidate' => function ($query) {
-            $query->where('active', true)->orderBy('order', 'asc');
-        }])->where('is_highlight', true)->latest()->first();
 
         return response()->json([
             'success' => true,
@@ -56,22 +52,6 @@ class PublicController extends Controller
                 'motto'            => $config->motto,
                 'video_profile'    => $config->video_profile,
                 'school_name'      => $config->school_name,
-                'highlight_voting' => $highlightVoting ? [
-                    'id'          => $highlightVoting->id,
-                    'title'       => $highlightVoting->title,
-                    'description' => $highlightVoting->description,
-                    'start_date'  => $highlightVoting->start_date?->format('d M Y'),
-                    'end_date'    => $highlightVoting->end_date?->format('d M Y'),
-                    'candidates'  => $highlightVoting->votingCandidate->map(function ($candidate) {
-                        return [
-                            'id'          => $candidate->id,
-                            'title'       => $candidate->title,
-                            'description' => $candidate->description,
-                            'img_cover'   => is_array($candidate->img_cover) ? ($candidate->img_cover['url'] ?? null) : $candidate->img_cover,
-                            'order'       => $candidate->order,
-                        ];
-                    }),
-                ] : null,
                 'footer'           => [
                     'description'      => $config->footer_description,
                     'school_telephone' => $config->school_telephone,
@@ -80,7 +60,6 @@ class PublicController extends Controller
                     'yt'               => $config->footer_yt,
                     'fb'               => $config->footer_fb,
                     'linkedin'         => $config->footer_linkedin,
-                    'map_embed_url'    => $config->map_embed_url,
                 ],
             ],
         ]);
@@ -140,21 +119,103 @@ class PublicController extends Controller
         ]);
     }
 
-    // GET Majors aktif (card)
+    // GET Majors aktif (Card)
     public function majorCard()
     {
         $majors = Majors::where('active', true)
-            ->orderBy('id', 'asc')
-            ->get(['id', 'slug', 'img_logo', 'code', 'major_name', 'summary']);
+            ->orderBy('major_duration', 'desc')
+            ->orderBy('code', 'asc')
+            ->get([
+                'id',
+                'slug',
+                'img_logo',
+                'code',
+                'major_name',
+                'summary',
+            ]);
+
+        $transformedMajors = $majors->map(function ($item) {
+            return [
+                'id'               => $item->id,
+                'slug'             => $item->slug,
+                'img_logo'         => $item->img_logo
+                    ? columnValueToFileObject('img_logo', $item->img_logo, 'majors', $item->id)
+                    : null,
+                'code'             => $item->code,
+                'major_name'       => $item->major_name,
+                'summary'          => $item->summary,
+            ];
+        });
 
         return response()->json([
             'success' => true,
-            'total'   => $majors->count(),
-            'data'    => $majors,
+            'total'   => $transformedMajors->count(),
+            'data'    => $transformedMajors,
         ]);
     }
 
-    // GET Events Publish (card, public — no auth)
+    // GET Major Detail
+    public function majorDetail(string $slug)
+    {
+        $major = Majors::where('active', true)
+            ->where(function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })
+            ->with([
+                'competencies' => function ($q) {
+                    // DIUBAH: Menggunakan 'id' untuk mengurutkan karena kolom 'order' tidak ada di database
+                    $q->where('active', true)->orderBy('id', 'asc');
+                },
+                'galleries' => function ($q) {
+                    $q->where('active', true)->orderBy('created_at', 'desc');
+                }
+            ])
+            ->first();
+
+        if (!$major) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data jurusan tidak ditemukan.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'               => $major->id,
+                'slug'             => $major->slug,
+                'code'             => $major->code,
+                'major_name'       => $major->major_name,
+                'summary'          => $major->summary,
+                'full_description' => $major->full_description,
+                'total_classes'    => $major->total_classes,
+                'major_duration'   => $major->major_duration,
+                'img_logo'         => $major->img_logo
+                    ? columnValueToFileObject('img_logo', $major->img_logo, 'majors', $major->id)
+                    : null,
+
+                'competencies' => $major->competencies->map(function ($comp) {
+                    return [
+                        'id'          => $comp->id,
+                        'title'       => $comp->competent_name,
+                        'description' => $comp->description,
+                    ];
+                }),
+
+                'galleries' => $major->galleries->map(function ($gallery) {
+                    return [
+                        'id'          => $gallery->id,
+                        'description' => $gallery->description,
+                        'img_cover'   => $gallery->img_cover
+                            ? columnValueToFileObject('img_cover', $gallery->img_cover, 'major_gallery', $gallery->id)
+                            : null,
+                    ];
+                }),
+            ]
+        ]);
+    }
+
+    // GET Events Publish
     public function events(Request $request)
     {
         $search = $request->query('search');
@@ -178,29 +239,26 @@ class PublicController extends Controller
             ->orderBy($sortBy, $sort);
 
         $transform = function ($item) {
-            // Fungsi pembantu agar tanggal pasti berformat 'd M Y'
-            $formatDate = function ($date) {
-                if (!$date) return null;
-                return $date instanceof \DateTimeInterface
-                    ? $date->format('d M Y')
-                    : Carbon::parse($date)->format('d M Y');
-            };
-
             return [
                 'id'           => $item->id,
                 'slug'         => $item->slug,
                 'title'        => $item->title,
                 'content'      => $item->content,
                 'location'     => $item->location,
-                'start_date'   => $formatDate($item->start_date),
-                'end_date'     => $formatDate($item->end_date),
-                'img_cover'    => $item->img_cover,
+
+                'start_date'   => $item->start_date ? Carbon::parse($item->start_date)->toIso8601String() : null,
+                'end_date'     => $item->end_date ? Carbon::parse($item->end_date)->toIso8601String() : null,
+
+                'img_cover'    => $item->img_cover
+                    ? columnValueToFileObject('img_cover', $item->img_cover, 'events', $item->id)
+                    : null,
+
                 'is_highlight' => (bool) $item->is_highlight,
                 'author'       => $item->createdBy?->fullname ?? 'Admin',
+                'created_at'   => $item->created_at?->toIso8601String(),
             ];
         };
 
-        // Kalau limit tidak dikirim (null) atau eksplisit 'all', tampilkan semua data
         if ($limit === null || $limit === 'all') {
             $events = $query->get();
 
@@ -236,7 +294,16 @@ class PublicController extends Controller
 
         $query = News::where('status', 'publish')
             ->when($search, function ($query) use ($search) {
-                $query->where('title', 'ilike', "%{$search}%");
+                $keywords = array_map('trim', explode(',', $search));
+
+                $query->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $keyword) {
+                        if (!empty($keyword)) {
+                            $q->orWhere('title', 'ilike', "%{$keyword}%")
+                                ->orWhere('content', 'ilike', "%{$keyword}%");
+                        }
+                    }
+                });
             })
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
@@ -252,20 +319,16 @@ class PublicController extends Controller
                 'category_name' => $item->category && $item->category->active ? $item->category->name : null,
                 'content'       => $item->content,
 
-                // Menggunakan helper global columnValueToFileObject
                 'img_cover'     => $item->img_cover
                     ? columnValueToFileObject('img_cover', $item->img_cover, 'news', $item->id)
                     : null,
 
                 'is_highlight'  => $item->is_highlight,
                 'author'        => $item->createdBy?->fullname ?? 'Admin',
-
-                // UBAH BAGIAN INI: Kirim format ISO 8601 agar presisi diparsing Vue (Tanggal & Jam)
                 'created_at'    => $item->created_at?->toIso8601String(),
             ];
         };
 
-        // Kalau limit tidak dikirim (null) atau eksplisit 'all', tampilkan semua data
         if ($limit === null || $limit === 'all') {
             $news = $query->get();
 
@@ -305,61 +368,6 @@ class PublicController extends Controller
             'success' => true,
             'total'   => $categories->count(),
             'data'    => $categories,
-        ]);
-    }
-
-    // GET Voting aktif (card)
-    public function voting(Request $request)
-    {
-        $search = $request->query('search');
-        $limit  = $request->query('limit');
-        $sort   = $request->query('sort', 'asc');
-        $sortBy = $request->query('sort_by', 'end_date');
-
-        $query = Voting::where('active', true)
-            ->when($search, function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'ilike', "%{$search}%")
-                        ->orWhere('description', 'ilike', "%{$search}%");
-                });
-            })
-            ->withCount('votingCandidate')
-            ->orderBy($sortBy, $sort);
-
-        $transform = function ($item) {
-            return [
-                'id'              => $item->id,
-                'slug'            => $item->slug,
-                'title'           => $item->title,
-                'description'     => $item->description,
-                'img_cover'       => $item->img_cover,
-                'start_date'      => $item->start_date?->format('d M Y H:i:s'),
-                'end_date'        => $item->end_date?->format('d M Y H:i:s'),
-                'is_highlight'    => $item->is_highlight
-            ];
-        };
-
-        // Kalau limit tidak dikirim (null) atau eksplisit 'all', tampilkan semua data
-        if ($limit === null || $limit === 'all') {
-            $votings = $query->get();
-
-            return response()->json([
-                'success'     => true,
-                'total'       => $votings->count(),
-                'totalPage'   => 1,
-                'currentPage' => 1,
-                'data'        => $votings->map($transform)->values(),
-            ]);
-        }
-
-        $votings = $query->paginate((int) $limit);
-
-        return response()->json([
-            'success'     => true,
-            'total'       => $votings->total(),
-            'totalPage'   => $votings->lastPage(),
-            'currentPage' => $votings->currentPage(),
-            'data'        => $votings->through($transform)->items(),
         ]);
     }
 
