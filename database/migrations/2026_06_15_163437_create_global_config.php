@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -34,6 +35,36 @@ return new class extends Migration
             $table->foreignId('updated_by')->constrained('users');
             $table->timestampsTz($precision = 0);
         });
+
+        $data = [
+            [
+                'hero_description' => 'Selamat Datang di Website Resmi Sekolah Kami',
+                'profile_title' => 'Profil Singkat Sekolah',
+                'profile_description' => 'Deskripsi lengkap mengenai profil sekolah, sejarah, dan berbagai keunggulan yang dimiliki.',
+                'img_profile_1' => 'default_profile1.jpg',
+                'img_profile_2' => 'default_profile2.jpg',
+                'school_vision' => 'Mewujudkan lulusan yang unggul, berkarakter, dan berwawasan global.',
+                'video_profile' => 'https://www.youtube.com/embed/example',
+                'school_name' => 'SMK Negeri Contoh',
+                'footer_description' => 'Deskripsi singkat pada bagian footer website.',
+                'motto' => 'Unggul dalam Prestasi, Santun dalam Perilaku',
+                'school_telephone' => '+62 274 123456',
+                'school_email' => 'info@sekolahcontoh.sch.id',
+                'footer_ig' => 'https://instagram.com/sekolah',
+                'footer_yt' => 'https://youtube.com/sekolah',
+                'footer_fb' => 'https://facebook.com/sekolah',
+                'footer_linkedin' => 'https://linkedin.com/school/sekolah',
+                'map_embed' => '',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ];
+
+        DB::table('global_config')->insert($data);
+
+        DB::statement("SELECT setval('global_config_id_seq', (SELECT MAX(id) FROM global_config)+1)");
     }
 
     /**
