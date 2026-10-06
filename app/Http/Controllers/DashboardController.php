@@ -16,11 +16,11 @@ class DashboardController extends Controller
     public function stats(): JsonResponse
     {
         try {
-            $totalNews = News::count();
-            $activeEvents = Events::count();
+            $totalNews = News::where('status', 'publish')->count();
+            $activeEvents = Events::where('status', 'publish')->count();
             $unreadFeedbacks = Feedbacks::count();
-            $totalMajors = Majors::count();
-            $activeBanners = Banners::count();
+            $totalMajors = Majors::where('active', 'true')->count();
+            $activeBanners = Banners::where('active', 'true')->count();
 
             $globalConfig = GlobalConfig::first();
             $hasVideo = !empty($globalConfig?->video_profile);
