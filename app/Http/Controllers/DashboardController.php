@@ -8,6 +8,7 @@ use App\Models\Feedbacks;
 use App\Models\Banners;
 use App\Models\Events;
 use App\Models\Majors;
+use App\Models\GlobalConfig;
 use Illuminate\Http\JsonResponse;
 
 class DashboardController extends Controller
@@ -21,6 +22,10 @@ class DashboardController extends Controller
             $totalMajors = Majors::count();
             $activeBanners = Banners::count();
 
+            $globalConfig = GlobalConfig::first();
+            $hasVideo = !empty($globalConfig?->video_profile);
+            $hasMap = !empty($globalConfig?->map_embed);
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -29,6 +34,8 @@ class DashboardController extends Controller
                     'unread_feedbacks' => $unreadFeedbacks,
                     'total_majors' => $totalMajors,
                     'active_banners' => $activeBanners,
+                    'has_video' => $hasVideo,
+                    'has_map' => $hasMap,
                 ]
             ], 200);
         } catch (\Exception $e) {

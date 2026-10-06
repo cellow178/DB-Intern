@@ -51,6 +51,7 @@ class PublicController extends Controller
                 ],
                 'motto'            => $config->motto,
                 'video_profile'    => $config->video_profile,
+                'map_embed'        => $config->map_embed,
                 'school_name'      => $config->school_name,
                 'footer'           => [
                     'description'      => $config->footer_description,
@@ -436,7 +437,8 @@ class PublicController extends Controller
             ->when($search, function ($query) use ($search) {
                 $query->where('category_name', 'ilike', "%{$search}%");
             })
-            ->orderBy('category_name')
+            ->orderByRaw("LOWER(category_name) = 'lainnya' ASC")
+            ->orderBy('category_name', 'asc')
             ->limit($limit)
             ->get();
 
