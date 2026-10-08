@@ -48,73 +48,115 @@ Route::get('/no-auth/feedback-categories', [PublicController::class, 'feedbackCa
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
-
-    // Dashboard
-    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
     // Banners
-    Route::get('/banners', [BannersController::class, 'index']);
-    Route::get('/banners/{id}', [BannersController::class, 'show']);
-    Route::post('/banners/create', [BannersController::class, 'create']);
-    Route::put('/banners/update', [BannersController::class, 'update']);
-    Route::delete('/banners/delete', [BannersController::class, 'destroy']);
+    Route::get('/banners', [BannersController::class, 'index'])
+        ->middleware('permission:view-banners');
+    Route::get('/banners/{id}', [BannersController::class, 'show'])
+        ->middleware('permission:show-banners');
+    Route::post('/banners/create', [BannersController::class, 'create'])
+        ->middleware('permission:create-banners');
+    Route::put('/banners/update', [BannersController::class, 'update'])
+        ->middleware('permission:update-banners');
+    Route::delete('/banners/delete', [BannersController::class, 'destroy'])
+        ->middleware('permission:delete-banners');
 
     // Missions
-    Route::get('/missions', [MissionController::class, 'index']);
+    Route::get('/missions', [MissionController::class, 'index'])
+        ->middleware('permission:view-missions');
     Route::get('/missions/dataset', [MissionController::class, 'dataset']);
-    Route::get('/missions/{id}', [MissionController::class, 'show']);
-    Route::post('/missions/create', [MissionController::class, 'create']);
-    Route::put('/missions/update', [MissionController::class, 'update']);
-    Route::post('/missions/update-status', [MissionController::class, 'updateStatus']);
-    Route::delete('/missions/delete', [MissionController::class, 'destroy']);
+    Route::get('/missions/{id}', [MissionController::class, 'show'])
+        ->middleware('permission:show-missions');
+    Route::post('/missions/create', [MissionController::class, 'create'])
+        ->middleware('permission:create-missions');
+    Route::put('/missions/update', [MissionController::class, 'update'])
+        ->middleware('permission:update-missions');
+    Route::post('/missions/update-status', [MissionController::class, 'updateStatus'])
+        ->middleware('permission:update-missions');
+    Route::delete('/missions/delete', [MissionController::class, 'destroy'])
+        ->middleware('permission:delete-missions');
 
     // Majors
-    Route::get('/majors', [MajorsController::class, 'index']);
+    Route::get('/majors', [MajorsController::class, 'index'])
+        ->middleware('permission:view-majors');
     Route::get('/majors/dataset', [MajorsController::class, 'dataset']);
-    Route::get('/majors/{id}', [MajorsController::class, 'show']);
-    Route::post('/majors/create', [MajorsController::class, 'create']);
-    Route::put('/majors/update', [MajorsController::class, 'update']);
-    Route::post('/majors/update-status', [MajorsController::class, 'updateStatus']);
-    Route::delete('/majors/delete', [MajorsController::class, 'destroy']);
+    Route::get('/majors/{id}', [MajorsController::class, 'show'])
+        ->middleware('permission:show-majors');
+    Route::post('/majors/create', [MajorsController::class, 'create'])
+        ->middleware('permission:create-majors');
+    Route::put('/majors/update', [MajorsController::class, 'update'])
+        ->middleware('permission:update-majors');
+    Route::post('/majors/update-status', [MajorsController::class, 'updateStatus'])
+        ->middleware('permission:update-majors');
+    Route::delete('/majors/delete', [MajorsController::class, 'destroy'])
+        ->middleware('permission:delete-majors');
 
     // Major Competents
-    Route::get('/major-competents', [MajorCompetentController::class, 'index']);
-    Route::get('major-competents/{id}', [MajorCompetentController::class, 'show']);
-    Route::post('/major-competents/create', [MajorCompetentController::class, 'create']);
-    Route::put('/major-competents/update', [MajorCompetentController::class, 'update']);
-    Route::delete('/major-competents/delete', [MajorCompetentController::class, 'destroy']);
+    Route::get('/major-competents', [MajorCompetentController::class, 'index'])
+        ->middleware('permission:view-major-competents');
+    Route::get('/major-competents/{id}', [MajorCompetentController::class, 'show'])
+        ->middleware('permission:show-major-competents');
+    Route::post('/major-competents/create', [MajorCompetentController::class, 'create'])
+        ->middleware('permission:create-major-competents');
+    Route::put('/major-competents/update', [MajorCompetentController::class, 'update'])
+        ->middleware('permission:update-major-competents');
+    Route::delete('/major-competents/delete', [MajorCompetentController::class, 'destroy'])
+        ->middleware('permission:delete-major-competents');
 
     // Major Gallery
-    Route::get('major-gallery', [MajorGalleryController::class, 'index']);
-    Route::get('major-gallery/{id}', [MajorGalleryController::class, 'show']);
-    Route::post('major-gallery/create', [MajorGalleryController::class, 'create']);
-    Route::put('major-gallery/update', [MajorGalleryController::class, 'update']);
-    Route::delete('major-gallery/delete', [MajorGalleryController::class, 'delete']);
+    Route::get('/major-gallery', [MajorGalleryController::class, 'index'])
+        ->middleware('permission:view-major-gallery');
+    Route::get('/major-gallery/{id}', [MajorGalleryController::class, 'show'])
+        ->middleware('permission:show-major-gallery');
+    Route::post('/major-gallery/create', [MajorGalleryController::class, 'create'])
+        ->middleware('permission:create-major-gallery');
+    Route::put('/major-gallery/update', [MajorGalleryController::class, 'update'])
+        ->middleware('permission:update-major-gallery');
+    Route::delete('/major-gallery/delete', [MajorGalleryController::class, 'delete'])
+        ->middleware('permission:delete-major-gallery');
 
     // Events
-    Route::get('/events', [EventsController::class, 'index']);
-    Route::get('/events/{id}', [EventsController::class, 'show']);
-    Route::post('/events/create', [EventsController::class, 'create']);
-    Route::put('/events/update', [EventsController::class, 'update']);
-    Route::post('/events/update-highlight', [EventsController::class, 'updateHighlight']);
-    Route::delete('/events/delete', [EventsController::class, 'destroy']);
+    Route::get('/events', [EventsController::class, 'index'])
+        ->middleware('permission:view-events');
+    Route::get('/events/{id}', [EventsController::class, 'show'])
+        ->middleware('permission:show-events');
+    Route::post('/events/create', [EventsController::class, 'create'])
+        ->middleware('permission:create-events');
+    Route::put('/events/update', [EventsController::class, 'update'])
+        ->middleware('permission:update-events');
+    Route::post('/events/update-highlight', [EventsController::class, 'updateHighlight'])
+        ->middleware('permission:update-events');
+    Route::delete('/events/delete', [EventsController::class, 'destroy'])
+        ->middleware('permission:delete-events');
 
     // News
-    Route::get('/news', [NewsController::class, 'index']);
+    Route::get('/news', [NewsController::class, 'index'])
+        ->middleware('permission:view-news');
     Route::get('/news/dataset', [NewsController::class, 'dataset']);
-    Route::get('/news/{id}', [NewsController::class, 'show']);
-    Route::post('/news/create', [NewsController::class, 'create']);
-    Route::post('/news/update-highlight', [NewsController::class, 'updateHighlight']);
-    Route::put('/news/update', [NewsController::class, 'update']);
-    Route::delete('/news/delete', [NewsController::class, 'destroy']);
+    Route::get('/news/{id}', [NewsController::class, 'show'])
+        ->middleware('permission:show-news');
+    Route::post('/news/create', [NewsController::class, 'create'])
+        ->middleware('permission:create-news');
+    Route::post('/news/update-highlight', [NewsController::class, 'updateHighlight'])
+        ->middleware('permission:update-news');
+    Route::put('/news/update', [NewsController::class, 'update'])
+        ->middleware('permission:update-news');
+    Route::delete('/news/delete', [NewsController::class, 'destroy'])
+        ->middleware('permission:delete-news');
 
     // News Category
-    Route::get('/news-categories', [NewsCategoriesController::class, 'index']);
+    Route::get('/news-categories', [NewsCategoriesController::class, 'index'])
+        ->middleware('permission:view-news-categories');
     Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
-    Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show']);
-    Route::post('/news-categories/create', [NewsCategoriesController::class, 'create']);
-    Route::put('/news-categories/update', [NewsCategoriesController::class, 'update']);
-    Route::delete('/news-categories/delete', [NewsCategoriesController::class, 'destroy']);
+    Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show'])
+        ->middleware('permission:show-news-categories');
+    Route::post('/news-categories/create', [NewsCategoriesController::class, 'create'])
+        ->middleware('permission:create-news-categories');
+    Route::put('/news-categories/update', [NewsCategoriesController::class, 'update'])
+        ->middleware('permission:update-news-categories');
+    Route::delete('/news-categories/delete', [NewsCategoriesController::class, 'destroy'])
+        ->middleware('permission:delete-news-categories');
 
     // Votings
     Route::get('/votings', [VotingController::class, 'index']);
@@ -132,36 +174,31 @@ Route::group([
     Route::delete('/voting-candidates/delete', [VotingCandidateController::class, 'destroy']);
 
     // Feedback
-    Route::get('/feedbacks', [FeedbacksController::class, 'index']);
-    Route::get('/feedbacks/{id}', [FeedbacksController::class, 'show']);
-    Route::delete('/feedbacks/delete', [FeedbacksController::class, 'destroy']);
+    Route::get('/feedbacks', [FeedbacksController::class, 'index'])
+        ->middleware('permission:view-feedbacks');
+    Route::get('/feedbacks/{id}', [FeedbacksController::class, 'show'])
+        ->middleware('permission:show-feedbacks');
+    Route::delete('/feedbacks/delete', [FeedbacksController::class, 'destroy'])
+        ->middleware('permission:delete-feedbacks');
 
     // Feedbacks Category
-    Route::get('/feedbacks-categories', [FeedbacksCategoriesController::class, 'index']);
+    Route::get('/feedbacks-categories', [FeedbacksCategoriesController::class, 'index'])
+        ->middleware('permission:view-feedbacks-categories');
     Route::get('/feedbacks-categories/dataset', [FeedbacksCategoriesController::class, 'dataset']);
-    Route::get('/feedbacks-categories/{id}', [FeedbacksCategoriesController::class, 'show']);
-    Route::post('/feedbacks-categories/create', [FeedbacksCategoriesController::class, 'create']);
-    Route::put('/feedbacks-categories/update', [FeedbacksCategoriesController::class, 'update']);
-    Route::delete('/feedbacks-categories/delete', [FeedbacksCategoriesController::class, 'destroy']);
+    Route::get('/feedbacks-categories/{id}', [FeedbacksCategoriesController::class, 'show'])
+        ->middleware('permission:show-feedbacks-categories');
+    Route::post('/feedbacks-categories/create', [FeedbacksCategoriesController::class, 'create'])
+        ->middleware('permission:create-feedbacks-categories');
+    Route::put('/feedbacks-categories/update', [FeedbacksCategoriesController::class, 'update'])
+        ->middleware('permission:update-feedbacks-categories');
+    Route::delete('/feedbacks-categories/delete', [FeedbacksCategoriesController::class, 'destroy'])
+        ->middleware('permission:delete-feedbacks-categories');
 
     // Global Config
-    Route::get('/global-config/show', [GlobalConfigController::class, 'show']);
-    Route::put('/global-config/update', [GlobalConfigController::class, 'update']);
-
-    // Route dinamis kustom bawaan project (Wajib di bawah route spesifik agar tidak bentrok)
-    Route::get('/{model}', [CrudController::class, 'index']);
-    Route::get('/{model}/dataset', [CrudController::class, 'dataset']);
-    Route::post('/{model}', [CrudController::class, 'create']);
-    Route::put('/{model}/{id}', [CrudController::class, 'update']);
-    Route::delete('/{model}/{id}', [CrudController::class, 'delete']);
-    Route::get('/{model}/{id}', [CrudController::class, 'show']);
-
-    Route::post('file/upload', [UploadController::class, 'upload'])->name("upload")->middleware('auth.rest');
-
-
-    Route::get('/gen-lang/lang', [CrudController::class, 'lang']);
-    Route::get('/gen-model/{model}', [CrudController::class, 'generate']);
-    Route::get('/gen-module/listmodule', [CrudController::class, 'listModule']);
+    Route::get('/global-config/show', [GlobalConfigController::class, 'show'])
+        ->middleware('permission:show-global-config');
+    Route::put('/global-config/update', [GlobalConfigController::class, 'update'])
+        ->middleware('permission:update-global-config');
 });
 
 Route::group([

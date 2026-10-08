@@ -142,6 +142,18 @@ class Events extends Model
         ],
     ];
     const FIELD_SEARCHABLE = ["slug", "title", "location", "status"];
+
+    const FIELD_SEARCHABLE_RELATION = [
+        "created_by" => [
+            "fullname",
+            "username",
+        ],
+        "updated_by" => [
+            "fullname",
+            "username",
+        ],
+    ];
+
     const FIELD_ARRAY = [];
     const FIELD_SORTABLE = [
         "id",

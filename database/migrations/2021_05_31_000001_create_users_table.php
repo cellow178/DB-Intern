@@ -42,6 +42,24 @@ class CreateUsersTable extends Migration
                 "role_id" => -1,
                 "status_code" => "user_active"
             ],
+            [
+                "id" => 2,
+                "fullname" => "Super Admin",
+                "username" => "superadmin",
+                "password" => bcrypt("12345"),
+                "email" => "superadmin@demo.com",
+                "role_id" => 1,
+                "status_code" => "user_active"
+            ],
+            [
+                "id" => 3,
+                "fullname" => "Guru",
+                "username" => "guru",
+                "password" => bcrypt("12345"),
+                "email" => "guru@demo.com",
+                "role_id" => 2,
+                "status_code" => "user_active"
+            ],
         ];
         DB::table('users')->insert($data);
         DB::statement("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users)+1)");

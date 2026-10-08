@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateRoles extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('roles', function (Blueprint $table) {
@@ -26,19 +21,38 @@ class CreateRoles extends Migration
             $table->bigInteger('updated_by')->nullable();
             $table->timestampsTz($precision = 0);
         });
+
         $data = [
-            ["id" => -1,"role_code" => "developer","role_name" => "Developer", "role_group_id" => 1, "description" => "Role untuk developer sistem"],
-            ["id" => 1,"role_code" => "super-admin","role_name" => "Super Admin", "role_group_id" => 2, "description" => null]
+            [
+                "id" => -1,
+                "role_code" => "developer",
+                "role_name" => "Developer",
+                "role_group_id" => 1,
+                "description" => "Role untuk developer sistem"
+            ],
+            [
+                "id" => 1,
+                "role_code" => "super-admin",
+                "role_name" => "Super Admin",
+                "role_group_id" => 2,
+                "description" => "Role dengan seluruh akses sistem"
+            ],
+            [
+                "id" => 2,
+                "role_code" => "guru",
+                "role_name" => "Guru",
+                "role_group_id" => 2,
+                "description" => "Role untuk mengelola event, berita, dan kritik & saran"
+            ]
         ];
+
         DB::table('roles')->insert($data);
-        DB::statement("SELECT setval('roles_id_seq', (SELECT MAX(id) FROM roles)+1)");
+
+        DB::statement(
+            "SELECT setval('roles_id_seq', (SELECT MAX(id) FROM roles)+1)"
+        );
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('roles');

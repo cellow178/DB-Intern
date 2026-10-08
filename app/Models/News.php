@@ -105,6 +105,17 @@ class News extends Model
         "content"
     ];
 
+    const FIELD_SEARCHABLE_RELATION = [
+        "created_by" => [
+            "fullname",
+            "username",
+        ],
+        "updated_by" => [
+            "fullname",
+            "username",
+        ],
+    ];
+    
     const FIELD_ARRAY = [];
     const FIELD_SORTABLE = ["id", "category_id", "slug", "title", "status", "created_at", "updated_at"];
     const FIELD_UNIQUE = [["slug"]];

@@ -115,16 +115,26 @@ class DoLogin extends CoreService
         | PERMISSION
         */
         $params = [];
-        if ($user->role_id == -1) {
-            $sql = "SELECT B.permission_code FROM permissions B WHERE B.active=true";
+
+        if (in_array($user->role_id, [-1, 1])) {
+            // Developer & Super Admin → semua permission
+            $sql = "SELECT B.permission_code
+            FROM permissions B
+            WHERE B.active = true";
         } else {
-            $sql = "SELECT B.permission_code FROM mapping_roles_permissions A
-                    INNER JOIN permissions B ON B.id = A.permission_id
-                    INNER JOIN users C ON C.role_id = A.role_id AND C.id = ? WHERE A.active=1";
-            $params[] = $user->id;
+            // Role lainnya → sesuai mapping
+            $sql = "SELECT B.permission_code
+            FROM mapping_roles_permissions A
+            INNER JOIN permissions B
+                ON B.id = A.permission_id
+            WHERE A.role_id = ?
+                AND A.active = true
+                AND B.active = true";
+
+            $params[] = $user->role_id;
         }
 
-        $permissionList =  array_map(function ($item) {
+        $permissionList = array_map(function ($item) {
             return $item->permission_code;
         }, DB::select($sql, $params));
 

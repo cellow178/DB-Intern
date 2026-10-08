@@ -21,12 +21,10 @@ class Get extends CoreService
         $model = str_replace('_', '-', $input["model"]);
         $classModel = "\\App\\Models\\" . Str::ucfirst(Str::camel($model));
         $permission = "view-" . $model;
-        
         if (!class_exists($classModel))
             throw new CoreException(__("message.model404", ['model' => $model]), 404);
         if (!$classModel::IS_LIST)
             throw new CoreException(__("message.404"), 404);
-        
         if (!hasPermission($permission))
             throw new CoreException(__("message.forbidden403", ['permission' => $permission]), 403);
 
@@ -64,13 +62,13 @@ class Get extends CoreService
         foreach ($classModel::FIELD_FILTERABLE as $filter => $operator) {
             if (!is_blank($input, $filter)) {
                 if (is_array($input[$filter])) {
-                    $input[$filter] = json_decode(json_encode($input[$filter],true));
+                    $input[$filter] = json_decode(json_encode($input[$filter], true));
                     $idsVal = [];
                     foreach ($input[$filter] as $data) {
                         $idsVal[] = json_decode($data)->id;
                     }
                     $input[$filter] = ["operator" => "in", "value" => $idsVal];
-                    $input[$filter] = json_encode($input[$filter],true);
+                    $input[$filter] = json_encode($input[$filter], true);
                 }
             }
         }
@@ -131,8 +129,18 @@ class Get extends CoreService
             $i++;
 
             //
-            if (!in_array($key, ["created_by", "updated_by"]))
+            if (!in_array($key, ["created_by", "updated_by"])) {
                 $searchableList[] = $searchableRealtionField;
+            } else {
+                if (
+                    defined($classModel . '::FIELD_SEARCHABLE_RELATION') &&
+                    isset($classModel::FIELD_SEARCHABLE_RELATION[$key])
+                ) {
+                    foreach ($classModel::FIELD_SEARCHABLE_RELATION[$key] as $searchableField) {
+                        $searchableList[] = $alias . "." . $searchableField;
+                    }
+                }
+            }
         }
 
         if (!empty($classModel::CUSTOM_RELATION)) {
@@ -251,7 +259,6 @@ class Get extends CoreService
                 return $key;
             }, $object);
         }
-        
         $total = DB::selectOne($sqlForCount, $params)->total;
         if ($limit == 'null') {
             $totalPage = 1;

@@ -22,29 +22,46 @@ class Me extends CoreService
     {
         $userId = Auth::id();
 
-        $user = DB::selectOne("SELECT users.id, users.fullname, users.username, users.email,
-                users.nisn, users.role_id, users.status_code, users.last_login_at,
-                roles.role_code, roles.role_name
+        $user = DB::selectOne(
+            "SELECT
+                users.id,
+                users.fullname,
+                users.username,
+                users.email,
+                users.nisn,
+                users.role_id,
+                users.status_code,
+                users.last_login_at,
+                roles.role_code,
+                roles.role_name
             FROM users
             LEFT JOIN roles ON roles.id = users.role_id
-            WHERE users.id = :user_id", ["user_id" => $userId]);
+            WHERE users.id = :user_id",
+            [
+                "user_id" => $userId
+            ]
+        );
 
         if (is_null($user)) {
             throw new CoreException(__("message.403"), 403);
         }
 
-        /*
-        | PERMISSION
-        | Pola sama seperti DoLogin.php: role_id = -1 (developer) dapat semua
-        | permission, selain itu query lewat mapping_roles_permissions.
-        */
+        // Developer (-1) dan Super Admin (1) mendapatkan semua permission
         $params = [];
-        if ($user->role_id == -1) {
-            $sql = "SELECT B.permission_code FROM permissions B WHERE B.active=true";
+
+        if (in_array($user->role_id, [-1, 1])) {
+            $sql = "SELECT permission_code
+                    FROM permissions
+                    WHERE active = true";
         } else {
-            $sql = "SELECT B.permission_code FROM mapping_roles_permissions A
-                    INNER JOIN permissions B ON B.id = A.permission_id
-                    WHERE A.role_id = ? AND A.active=true AND B.active=true";
+            $sql = "SELECT B.permission_code
+                    FROM mapping_roles_permissions A
+                    INNER JOIN permissions B
+                        ON B.id = A.permission_id
+                    WHERE A.role_id = ?
+                        AND A.active = true
+                        AND B.active = true";
+
             $params[] = $user->role_id;
         }
 
@@ -52,9 +69,7 @@ class Me extends CoreService
             return $item->permission_code;
         }, DB::select($sql, $params));
 
-        // REMOVE SOME PROPERTY OF OBJECT
         unset($user->password);
-        // END REMOVE PROPERTY OF OBJECT
 
         return [
             "success" => true,

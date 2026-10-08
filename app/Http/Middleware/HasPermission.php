@@ -9,23 +9,35 @@ use Illuminate\Support\Facades\DB;
 
 class HasPermission
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
-    public function handle(Request $request, Closure $next, $task)
+    public function handle(Request $request, Closure $next, $permissionCode)
     {
-        $userId = Auth::id();
-        $permission = DB::selectOne("SELECT 1 FROM users A
-            INNER JOIN mapping_roles_tasks B ON B.role_id = A.role_id
-            INNER JOIN tasks C ON B.task_id = C.id AND C.task_code = ?
-        WHERE A.id = ?", [$task, $userId]);
+        $user = Auth::guard('api')->user();
 
-        if (is_null($permission)) {
-            return response()->json(["message" => __("message.403")]);
+        if (!$user) {
+            return response()->json([
+                'message' => 'Not authorized.'
+            ], 401);
+        }
+
+        $permission = DB::selectOne(
+            "SELECT 1
+             FROM mapping_roles_permissions A
+             INNER JOIN permissions B
+                ON B.id = A.permission_id
+             WHERE A.role_id = ?
+               AND A.active = true
+               AND B.permission_code = ?
+               AND B.active = true",
+            [
+                $user->role_id,
+                $permissionCode
+            ]
+        );
+
+        if (!$permission) {
+            return response()->json([
+                'message' => 'Forbidden. Anda tidak memiliki permission ini.'
+            ], 403);
         }
 
         return $next($request);
