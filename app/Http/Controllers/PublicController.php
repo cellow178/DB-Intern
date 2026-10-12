@@ -216,28 +216,44 @@ class PublicController extends Controller
         ]);
     }
 
-    // GET Events Publish
+
     public function events(Request $request)
     {
-        $search = $request->query('search');
+        $search = trim($request->query('search', ''));
         $limit  = $request->query('limit');
-        $sort   = $request->query('sort', 'asc');
+        $sort   = strtolower($request->query('sort', 'asc'));
         $sortBy = $request->query('sort_by', 'start_date');
 
         $allowedSorts = ['id', 'title', 'start_date', 'end_date'];
-        if (!in_array($sortBy, $allowedSorts)) {
+
+        if (!in_array($sortBy, $allowedSorts, true)) {
             $sortBy = 'start_date';
         }
 
+        if (!in_array($sort, ['asc', 'desc'], true)) {
+            $sort = 'asc';
+        }
+
+        $excludeHighlight =
+            ($request->has('page') || $request->has('limit'))
+            && $search === '';
+
         $query = Events::where('status', 'publish')
-            ->when($search, function ($query) use ($search) {
+            ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'ilike', "%{$search}%")
                         ->orWhere('location', 'ilike', "%{$search}%");
                 });
             })
+            ->when($excludeHighlight, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('is_highlight', false)
+                        ->orWhereNull('is_highlight');
+                });
+            })
             ->with('createdBy')
-            ->orderBy($sortBy, $sort);
+            ->orderBy($sortBy, $sort)
+            ->orderBy('id', 'desc');
 
         $transform = function ($item) {
             return [
@@ -247,11 +263,21 @@ class PublicController extends Controller
                 'content'      => $item->content,
                 'location'     => $item->location,
 
-                'start_date'   => $item->start_date ? Carbon::parse($item->start_date)->toIso8601String() : null,
-                'end_date'     => $item->end_date ? Carbon::parse($item->end_date)->toIso8601String() : null,
+                'start_date'   => $item->start_date
+                    ? Carbon::parse($item->start_date)->toIso8601String()
+                    : null,
+
+                'end_date'     => $item->end_date
+                    ? Carbon::parse($item->end_date)->toIso8601String()
+                    : null,
 
                 'img_cover'    => $item->img_cover
-                    ? columnValueToFileObject('img_cover', $item->img_cover, 'events', $item->id)
+                    ? columnValueToFileObject(
+                        'img_cover',
+                        $item->img_cover,
+                        'events',
+                        $item->id
+                    )
                     : null,
 
                 'is_highlight' => (bool) $item->is_highlight,
@@ -272,7 +298,7 @@ class PublicController extends Controller
             ]);
         }
 
-        $limit = max(1, (int) $limit);
+        $limit = max(1, min((int) $limit, 100));
         $events = $query->paginate($limit);
 
         return response()->json([
@@ -280,7 +306,9 @@ class PublicController extends Controller
             'total'       => $events->total(),
             'totalPage'   => $events->lastPage(),
             'currentPage' => $events->currentPage(),
-            'data'        => $events->through($transform)->items(),
+            'data'        => $events->getCollection()
+                ->map($transform)
+                ->values(),
         ]);
     }
 
@@ -293,13 +321,16 @@ class PublicController extends Controller
         $sort       = $request->query('sort', 'desc');
         $sortBy     = $request->query('sort_by', 'created_at');
 
+        $excludeHighlight =
+            $request->has('page') || $request->has('limit');
+
         $query = News::where('status', 'publish')
             ->when($search, function ($query) use ($search) {
                 $keywords = array_map('trim', explode(',', $search));
 
                 $query->where(function ($q) use ($keywords) {
                     foreach ($keywords as $keyword) {
-                        if (!empty($keyword)) {
+                        if ($keyword !== '') {
                             $q->orWhere('title', 'ilike', "%{$keyword}%")
                                 ->orWhere('content', 'ilike', "%{$keyword}%");
                         }
@@ -309,6 +340,12 @@ class PublicController extends Controller
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
             })
+            ->when($excludeHighlight, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('is_highlight', false)
+                        ->orWhereNull('is_highlight');
+                });
+            })
             ->with('createdBy', 'category')
             ->orderBy($sortBy, $sort);
 
@@ -317,13 +354,18 @@ class PublicController extends Controller
                 'id'            => $item->id,
                 'slug'          => $item->slug,
                 'title'         => $item->title,
-                'category_name' => $item->category && $item->category->active ? $item->category->name : null,
-                'content'       => $item->content,
-
-                'img_cover'     => $item->img_cover
-                    ? columnValueToFileObject('img_cover', $item->img_cover, 'news', $item->id)
+                'category_name' => $item->category && $item->category->active
+                    ? $item->category->name
                     : null,
-
+                'content'       => $item->content,
+                'img_cover'     => $item->img_cover
+                    ? columnValueToFileObject(
+                        'img_cover',
+                        $item->img_cover,
+                        'news',
+                        $item->id
+                    )
+                    : null,
                 'is_highlight'  => $item->is_highlight,
                 'author'        => $item->createdBy?->fullname ?? 'Admin',
                 'created_at'    => $item->created_at?->toIso8601String(),
@@ -349,7 +391,9 @@ class PublicController extends Controller
             'total'       => $news->total(),
             'totalPage'   => $news->lastPage(),
             'currentPage' => $news->currentPage(),
-            'data'        => $news->through($transform)->items(),
+            'data'        => collect($news->items())
+                ->map($transform)
+                ->values(),
         ]);
     }
 

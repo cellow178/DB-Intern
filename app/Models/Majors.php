@@ -304,8 +304,6 @@ class Majors extends Model
 
     public static function beforeUpdate(array $input): array
     {
-        $input['child_data_major_competent'] = $input['child_data_major_competent'] ?? [];
-        $input['child_data_major_gallery'] = $input['child_data_major_gallery'] ?? [];
 
         if (empty($input['slug']) && !empty($input['major_name'])) {
             $baseSlug = Str::slug($input['major_name']);
@@ -313,7 +311,11 @@ class Majors extends Model
             $counter = 1;
             $id = $input['id'] ?? null;
 
-            while (self::where('slug', $slug)->when($id, fn($q) => $q->where('id', '!=', $id))->exists()) {
+            while (
+                self::where('slug', $slug)
+                ->when($id, fn($q) => $q->where('id', '!=', $id))
+                ->exists()
+            ) {
                 $slug = $baseSlug . '-' . $counter++;
             }
 
