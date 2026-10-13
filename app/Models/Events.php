@@ -27,6 +27,7 @@ class Events extends Model
         'start_date',
         'end_date',
         'img_cover',
+        'img_description',
         'status',
         'is_highlight',
         'created_by',
@@ -48,6 +49,7 @@ class Events extends Model
         "start_date",
         "end_date",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "created_by",
@@ -63,6 +65,7 @@ class Events extends Model
         "start_date",
         "end_date",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "created_by",
@@ -76,6 +79,7 @@ class Events extends Model
         "start_date",
         "end_date",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "updated_by"
@@ -89,6 +93,7 @@ class Events extends Model
         "start_date",
         "end_date",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "created_by",
@@ -122,6 +127,9 @@ class Events extends Model
         "img_cover" => [
             "operator" => "=",
         ],
+        "img_description" => [
+            "operator" => "=",
+        ],
         "status" => [
             "operator" => "=",
         ],
@@ -141,7 +149,7 @@ class Events extends Model
             "operator" => "=",
         ],
     ];
-    const FIELD_SEARCHABLE = ["slug", "title", "location", "status"];
+    const FIELD_SEARCHABLE = ["slug", "title", "location", "status", "img_description"];
 
     const FIELD_SEARCHABLE_RELATION = [
         "created_by" => [
@@ -164,6 +172,7 @@ class Events extends Model
         "start_date",
         "end_date",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "created_by",
@@ -182,6 +191,7 @@ class Events extends Model
         "start_date" => "date",
         "end_date" => "date",
         "img_cover" => "text",
+        "img_description" => "character_varying",
         "status" => "character_varying",
         "is_highlight" => "boolean",
         "created_by" => "bigint",
@@ -198,6 +208,7 @@ class Events extends Model
         "start_date" => "",
         "end_date" => "",
         "img_cover" => "",
+        "img_description" => "",
         "status" => "",
         "is_highlight" => "false",
         "created_by" => "",
@@ -233,6 +244,7 @@ class Events extends Model
         "start_date" => "required",
         "end_date" => "required",
         "img_cover" => "nullable|string",
+        "img_description" => "nullable|string|max:255",
         "status" => "required|string|max:255",
         "is_highlight" => "nullable",
         "created_by" => "nullable|integer",

@@ -17,6 +17,7 @@ class News extends Model
         'title',
         'content',
         'img_cover',
+        'img_description',
         'status',
         'is_highlight',
         'created_by',
@@ -36,6 +37,7 @@ class News extends Model
         "slug",
         "title",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "created_by",
@@ -49,6 +51,7 @@ class News extends Model
         "title",
         "content",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "created_by",
@@ -60,6 +63,7 @@ class News extends Model
         "title",
         "content",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "updated_by"
@@ -71,6 +75,7 @@ class News extends Model
         "title",
         "content",
         "img_cover",
+        "img_description",
         "status",
         "is_highlight",
         "created_by",
@@ -85,6 +90,9 @@ class News extends Model
             "operator" => "=",
         ],
         "category_id" => [
+            "operator" => "=",
+        ],
+        "img_description" => [
             "operator" => "=",
         ],
         "status" => [
@@ -102,7 +110,8 @@ class News extends Model
         "slug",
         "title",
         "status",
-        "content"
+        "content",
+        "img_description"
     ];
 
     const FIELD_SEARCHABLE_RELATION = [
@@ -117,7 +126,7 @@ class News extends Model
     ];
     
     const FIELD_ARRAY = [];
-    const FIELD_SORTABLE = ["id", "category_id", "slug", "title", "status", "created_at", "updated_at"];
+    const FIELD_SORTABLE = ["id", "category_id", "slug", "title", "status", "created_at", "updated_at", "img_description"];
     const FIELD_UNIQUE = [["slug"]];
     const FIELD_UPLOAD = ["img_cover"];
 
@@ -128,6 +137,7 @@ class News extends Model
         "title" => "character_varying",
         "content" => "text",
         "img_cover" => "text",
+        "img_description" => "character_varying",
         "status" => "character_varying",
         "is_highlight" => "boolean",
         "created_by" => "bigint",
@@ -142,6 +152,7 @@ class News extends Model
         "title"        => "",
         "content"      => "",
         "img_cover"    => "",
+        "img_description" => "",
         "status"       => "draft",
         "is_highlight" => false,
         "created_by"   => "",
@@ -185,6 +196,7 @@ class News extends Model
         "title"        => "required|string|min:10|max:255",
         "content"      => "required|string",
         "img_cover"    => "nullable|string",
+        "img_description" => "nullable|string|max:255",
         "status"       => "nullable|in:draft,publish,archive",
         "is_highlight" => "nullable|boolean",
         "created_by"   => "nullable|integer",

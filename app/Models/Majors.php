@@ -201,7 +201,7 @@ class Majors extends Model
             "aliasTable" => "B",
             "linkField" => "id",
             "displayName" => "rel_created_by",
-            "selectFields" => ["username"],
+            "selectFields" => ["fullname"],
             "selectValue" => "id AS rel_created_by"
         ],
         "updated_by" => [
@@ -209,7 +209,7 @@ class Majors extends Model
             "aliasTable" => "C",
             "linkField" => "id",
             "displayName" => "rel_updated_by",
-            "selectFields" => ["username"],
+            "selectFields" => ["fullname"],
             "selectValue" => "id AS rel_updated_by"
         ],
     ];

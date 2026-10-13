@@ -280,6 +280,8 @@ class PublicController extends Controller
                     )
                     : null,
 
+                'img_description' => $item->img_description ?? null,
+
                 'is_highlight' => (bool) $item->is_highlight,
                 'author'       => $item->createdBy?->fullname ?? 'Admin',
                 'created_at'   => $item->created_at?->toIso8601String(),
@@ -366,6 +368,7 @@ class PublicController extends Controller
                         $item->id
                     )
                     : null,
+                'img_description' => $item->img_description ?? null,
                 'is_highlight'  => $item->is_highlight,
                 'author'        => $item->createdBy?->fullname ?? 'Admin',
                 'created_at'    => $item->created_at?->toIso8601String(),
