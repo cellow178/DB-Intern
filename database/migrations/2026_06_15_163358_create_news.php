@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('content');
             $table->text('img_cover')->nullable();
+            $table->string('img_description')->nullable();
             $table->enum('status', ['archive', 'publish', 'draft']);
             $table->boolean('is_highlight')->default(false);
             $table->foreignId('created_by')->constrained('users');

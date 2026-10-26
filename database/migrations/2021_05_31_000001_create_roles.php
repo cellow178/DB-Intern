@@ -43,6 +43,13 @@ class CreateRoles extends Migration
                 "role_name" => "Guru",
                 "role_group_id" => 2,
                 "description" => "Role untuk mengelola event, berita, dan kritik & saran"
+            ],
+            [
+                "id" => 3,
+                "role_code" => "siswa",
+                "role_name" => "Siswa",
+                "role_group_id" => 3,
+                "description" => "Role untuk siswa melakukan voting"
             ]
         ];
 

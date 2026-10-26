@@ -16,9 +16,13 @@ use App\Http\Controllers\FeedbacksController;
 use App\Http\Controllers\FeedbacksCategoriesController;
 use App\Http\Controllers\GlobalConfigController;
 use App\Http\Controllers\MajorCompetentController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\StudentImportController;
+use App\Http\Controllers\UsersController;
 use App\Http\Controllers\VotingCandidateController;
 use App\Http\Controllers\VotingController;
+use App\Http\Controllers\BoothController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -45,10 +49,59 @@ Route::get('/no-auth/votings', [PublicController::class, 'voting']);
 Route::post('/no-auth/feedback/create', [PublicController::class, 'createFeedback']);
 Route::get('/no-auth/feedback-categories', [PublicController::class, 'feedbackCategoriesDataset']);
 
+// Bilik TPS publik (tanpa login akun — pakai pass bilik / ballot token).
+Route::get('/no-auth/booth/open', [BoothController::class, 'openBooth']);
+Route::post('/no-auth/booth/login', [BoothController::class, 'boothLogin']);
+Route::post('/no-auth/booth/cast', [BoothController::class, 'cast']);
+
+// Lupa password (publik, rate-limit di controller). Hanya lupa password —
+// tidak ada lupa username agar endpoint tidak jadi enumeration oracle.
+Route::post('/no-auth/forgot-password', [PasswordResetController::class, 'forgot']);
+Route::post('/no-auth/reset-password', [PasswordResetController::class, 'reset']);
+
 Route::group([
     'middleware' => ['setguard:api', 'auth.rest']
 ], function () {
-     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+    // Users
+    Route::get('/users', [UsersController::class, 'index'])
+        ->middleware('permission:view-users');
+    Route::get('/users/dataset', [UsersController::class, 'dataset'])
+        ->middleware('permission:view-users');
+    Route::get('/users/student-filter-options', [UsersController::class, 'studentFilterOptions'])
+        ->middleware('permission:view-users');
+    Route::get('/users/{id}', [UsersController::class, 'show'])
+        ->middleware('permission:show-users');
+    Route::post('/users/create', [UsersController::class, 'create'])
+        ->middleware('permission:create-users');
+    Route::put('/users/update', [UsersController::class, 'update'])
+        ->middleware('permission:update-users');
+    Route::post('/users/update-status', [UsersController::class, 'updateStatus'])
+        ->middleware('permission:update-users');
+    Route::post('/users/reset-password', [UsersController::class, 'resetPassword'])
+        ->middleware('permission:update-users');
+    Route::post('/users/change-password', [UsersController::class, 'changePassword']);
+    Route::put('/users/update-profile', [UsersController::class, 'updateProfile']);
+    Route::delete('/users/delete', [UsersController::class, 'destroy'])
+        ->middleware('permission:delete-users');
+
+    // Import siswa (bulk via Excel) + kelulusan per tahun lulus
+    Route::get('/students/import-template', [StudentImportController::class, 'template'])
+        ->middleware('permission:create-users');
+    Route::post('/students/import-upload', [StudentImportController::class, 'upload'])
+        ->middleware('permission:create-users');
+    Route::post('/students/import-preview', [StudentImportController::class, 'preview'])
+        ->middleware('permission:create-users');
+    Route::post('/students/import-commit', [StudentImportController::class, 'commit'])
+        ->middleware('permission:create-users');
+    Route::post('/students/graduate', [StudentImportController::class, 'graduate'])
+        ->middleware('permission:update-users');
+    Route::post('/students/purge-graduates', [StudentImportController::class, 'purgeGraduates'])
+        ->middleware('permission:delete-users');
+    Route::get('/students/print-credentials', [StudentImportController::class, 'printCredentials'])
+        ->middleware('permission:view-users');
+
 
     // Banners
     Route::get('/banners', [BannersController::class, 'index'])
@@ -65,14 +118,11 @@ Route::group([
     // Missions
     Route::get('/missions', [MissionController::class, 'index'])
         ->middleware('permission:view-missions');
-    Route::get('/missions/dataset', [MissionController::class, 'dataset']);
     Route::get('/missions/{id}', [MissionController::class, 'show'])
         ->middleware('permission:show-missions');
     Route::post('/missions/create', [MissionController::class, 'create'])
         ->middleware('permission:create-missions');
     Route::put('/missions/update', [MissionController::class, 'update'])
-        ->middleware('permission:update-missions');
-    Route::post('/missions/update-status', [MissionController::class, 'updateStatus'])
         ->middleware('permission:update-missions');
     Route::delete('/missions/delete', [MissionController::class, 'destroy'])
         ->middleware('permission:delete-missions');
@@ -80,14 +130,11 @@ Route::group([
     // Majors
     Route::get('/majors', [MajorsController::class, 'index'])
         ->middleware('permission:view-majors');
-    Route::get('/majors/dataset', [MajorsController::class, 'dataset']);
     Route::get('/majors/{id}', [MajorsController::class, 'show'])
         ->middleware('permission:show-majors');
     Route::post('/majors/create', [MajorsController::class, 'create'])
         ->middleware('permission:create-majors');
     Route::put('/majors/update', [MajorsController::class, 'update'])
-        ->middleware('permission:update-majors');
-    Route::post('/majors/update-status', [MajorsController::class, 'updateStatus'])
         ->middleware('permission:update-majors');
     Route::delete('/majors/delete', [MajorsController::class, 'destroy'])
         ->middleware('permission:delete-majors');
@@ -113,7 +160,7 @@ Route::group([
         ->middleware('permission:create-major-gallery');
     Route::put('/major-gallery/update', [MajorGalleryController::class, 'update'])
         ->middleware('permission:update-major-gallery');
-    Route::delete('/major-gallery/delete', [MajorGalleryController::class, 'delete'])
+    Route::delete('/major-gallery/delete', [MajorGalleryController::class, 'destroy'])
         ->middleware('permission:delete-major-gallery');
 
     // Events
@@ -133,7 +180,6 @@ Route::group([
     // News
     Route::get('/news', [NewsController::class, 'index'])
         ->middleware('permission:view-news');
-    Route::get('/news/dataset', [NewsController::class, 'dataset']);
     Route::get('/news/{id}', [NewsController::class, 'show'])
         ->middleware('permission:show-news');
     Route::post('/news/create', [NewsController::class, 'create'])
@@ -148,7 +194,8 @@ Route::group([
     // News Category
     Route::get('/news-categories', [NewsCategoriesController::class, 'index'])
         ->middleware('permission:view-news-categories');
-    Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset']);
+    Route::get('/news-categories/dataset', [NewsCategoriesController::class, 'dataset'])
+        ->middleware('permission:view-news-categories');
     Route::get('/news-categories/{id}', [NewsCategoriesController::class, 'show'])
         ->middleware('permission:show-news-categories');
     Route::post('/news-categories/create', [NewsCategoriesController::class, 'create'])
@@ -159,12 +206,39 @@ Route::group([
         ->middleware('permission:delete-news-categories');
 
     // Votings
-    Route::get('/votings', [VotingController::class, 'index']);
-    Route::get('/votings/{id}', [VotingController::class, 'show']);
-    Route::post('/votings/create', [VotingController::class, 'create']);
-    Route::post('/votings/update-highlight', [VotingController::class, 'updateHighlight']);
-    Route::put('/votings/update', [VotingController::class, 'update']);
-    Route::delete('/votings/delete', [VotingController::class, 'destroy']);
+    Route::get('/votings', [VotingController::class, 'index'])
+        ->middleware('permission:view-votings');
+    Route::get('/votings/{id}/dpt-preview', [VotingController::class, 'dptPreview'])
+        ->middleware('permission:view-votings');
+    Route::get('/votings/{id}/result', [VotingController::class, 'result'])
+        ->middleware('permission:view-votings');
+    Route::get('/votings/{id}/dpt', [VotingController::class, 'dptList'])
+        ->middleware('permission:view-votings');
+    Route::post('/votings/close', [VotingController::class, 'closeVoting'])
+        ->middleware('permission:update-votings');
+    Route::get('/votings/{id}', [VotingController::class, 'show'])
+        ->middleware('permission:show-votings');
+    Route::post('/votings/create', [VotingController::class, 'create'])
+        ->middleware('permission:create-votings');
+    Route::post('/votings/update-highlight', [VotingController::class, 'updateHighlight'])
+        ->middleware('permission:update-votings');
+    Route::put('/votings/update', [VotingController::class, 'update'])
+        ->middleware('permission:update-votings');
+    Route::delete('/votings/delete', [VotingController::class, 'destroy'])
+        ->middleware('permission:delete-votings');
+    Route::post('/votings/freeze-dpt', [VotingController::class, 'freezeDpt'])
+        ->middleware('permission:update-votings');
+
+    // Bilik TPS — check-in oleh panitia (butuh kelola voting)
+    Route::post('/booth/checkin', [BoothController::class, 'checkin'])
+        ->middleware('permission:update-votings');
+    // Bilik remote dari akun sendiri (semua role yang login, tanpa permission khusus)
+    Route::post('/booth/remote-login', [BoothController::class, 'remoteLogin']);
+    Route::get('/booth/my-status', [BoothController::class, 'mystatus']);
+
+    // Bilik publik (laptop TPS tanpa login akun): login pass + mencoblos.
+    // Ditaruh di luar group auth agar bisa diakses tanpa JWT.
+
 
     // Voting Candidates
     Route::get('/voting-candidates', [VotingCandidateController::class, 'index']);
@@ -184,7 +258,8 @@ Route::group([
     // Feedbacks Category
     Route::get('/feedbacks-categories', [FeedbacksCategoriesController::class, 'index'])
         ->middleware('permission:view-feedbacks-categories');
-    Route::get('/feedbacks-categories/dataset', [FeedbacksCategoriesController::class, 'dataset']);
+    Route::get('/feedbacks-categories/dataset', [FeedbacksCategoriesController::class, 'dataset'])
+        ->middleware('permission:view-feedbacks-categories');
     Route::get('/feedbacks-categories/{id}', [FeedbacksCategoriesController::class, 'show'])
         ->middleware('permission:show-feedbacks-categories');
     Route::post('/feedbacks-categories/create', [FeedbacksCategoriesController::class, 'create'])

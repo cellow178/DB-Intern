@@ -18,6 +18,15 @@ class Voting extends Model
         'end_date',
         'active',
         'is_highlight',
+        'mode',
+        'include_siswa',
+        'include_teachers',
+        'masa_studi_list',
+        'tahun_masuk_list',
+        'include_tingkat_13',
+        'dpt_total',
+        'dpt_frozen_at',
+        'closed_at',
         'created_by',
         'updated_by'
     ];
@@ -27,6 +36,13 @@ class Voting extends Model
         'end_date'     => 'datetime',
         'active'       => 'boolean',
         'is_highlight' => 'boolean',
+        'include_siswa' => 'boolean',
+        'include_teachers' => 'boolean',
+        'masa_studi_list' => 'array',
+        'tahun_masuk_list' => 'array',
+        'include_tingkat_13' => 'boolean',
+        'dpt_frozen_at' => 'datetime',
+        'closed_at' => 'datetime',
     ];
 
     public function createdBy()

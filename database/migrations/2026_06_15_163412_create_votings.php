@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('img_cover')->nullable();
             $table->string('title');
-            $table->string('description');
+            $table->text('description');
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->boolean('active')->default(true);

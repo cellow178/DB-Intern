@@ -80,7 +80,11 @@ class VotingCandidateController extends Controller
                 'id'                  => $candidate->id,
                 'voting_id'           => $candidate->voting_id,
                 'voting_title'        => $candidate->voting?->title,
-                'img_cover'           => $candidate->img_cover,
+                // Samakan format file object bawaan (Find): url + path agar
+                // frontend bisa membangun URL gambar yang valid.
+                'img_cover'           => $candidate->img_cover
+                    ? columnValueToFileObject('img_cover', $candidate->img_cover, 'voting_candidates', $candidate->id)
+                    : null,
                 'title'               => $candidate->title,
                 'description'         => $candidate->description,
                 'order'               => $candidate->order,
@@ -93,9 +97,34 @@ class VotingCandidateController extends Controller
         ]);
     }
 
+
+    /**
+     * Normalisasi img_cover dari ImageUpload: object file {path,...} atau
+     * string path -> string path mentah ("tmp/xxx.jpg"). URL temp-file /
+     * nilai "x" lama ditolak agar validasi required/string menangkapnya.
+     */
+    private function normalizeImgCover($value): ?string
+    {
+        if (is_array($value)) {
+            $value = $value['path'] ?? $value['field_value'] ?? null;
+        }
+        $value = is_string($value) ? trim($value) : null;
+        if (!$value || $value === 'x') {
+            return null;
+        }
+        if (str_contains($value, 'temp-file') || str_contains($value, 'tumb-temp-file')) {
+            return null;
+        }
+        return $value;
+    }
+
     // POST Create Voting Candidate
     public function create(Request $request)
     {
+        // Terima object file dari ImageUpload (path) maupun string path.
+        if ($request->has('img_cover')) {
+            $request->merge(['img_cover' => $this->normalizeImgCover($request->input('img_cover'))]);
+        }
         try {
             $validated = $request->validate([
                 'voting_id'   => ['required', 'integer', 'exists:votings,id'],
@@ -164,6 +193,10 @@ class VotingCandidateController extends Controller
     // PUT Update Voting Candidate
     public function update(Request $request)
     {
+        // Samakan dengan create: object file maupun string path diterima.
+        if ($request->has('img_cover')) {
+            $request->merge(['img_cover' => $this->normalizeImgCover($request->input('img_cover'))]);
+        }
         try {
             $validated = $request->validate([
                 'id'          => ['required', 'integer', 'exists:voting_candidates,id'],

@@ -122,6 +122,10 @@ class Add extends CoreService
             if ($item == "updated_by") {
                 $input[$item] = Auth::id();
             }
+            // Terapkan nilai default model bila field tidak dikirim (mis. boolean false).
+            if (!array_key_exists($item, $input) && array_key_exists($item, $classModel::FIELD_DEFAULT_VALUE)) {
+                $input[$item] = $classModel::FIELD_DEFAULT_VALUE[$item];
+            }
             if (isset($input[$item])) {
                 $inputValue = $input[$item] ?? $classModel::FIELD_DEFAULT_VALUE[$item];
                 $object->{$item} = ($inputValue !== '') ? $inputValue : null;

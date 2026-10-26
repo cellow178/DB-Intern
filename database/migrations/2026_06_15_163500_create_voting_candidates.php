@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('voting_id')->constrained('votings')->onDelete('cascade');
             $table->text('img_cover');
             $table->string('title');
-            $table->string('description');
+            $table->text('description');
             $table->integer('order');
             $table->boolean('active')->default(true);
             $table->foreignId('created_by')->constrained('users');

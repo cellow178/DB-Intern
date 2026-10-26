@@ -20,13 +20,16 @@ class CreateUsersTable extends Migration
             $table->string('username', 100)->unique();
             $table->text('password');
             $table->string('email')->unique()->nullable();
+            $table->string('nis', 20)->unique()->nullable();
             $table->string('nisn', 20)->unique()->nullable();
+            $table->integer('masa_studi')->nullable();
             $table->foreignId('role_id')->constrained('roles');
             $table->string('reset_token')->nullable();
             $table->timestampTz('reset_token_expired_at')->nullable();
             $table->timestampTz('email_verified_at')->nullable();
             $table->timestampTz('last_login_at')->nullable();
             $table->string('status_code')->nullable();
+            $table->boolean('must_change_password')->default(false);
             $table->foreignId('created_by')->nullable();
             $table->foreignId('updated_by')->nullable();
             $table->timestampsTz($precision = 0);

@@ -103,11 +103,19 @@ class UploadController extends Controller
 
     public function getFile($model, $field, $id, $time)
     {
-        $classModel = "\\App\\Models\\" . Str::ucfirst(Str::camel($model));
+        // Alias khusus: URL memakai underscore ("voting_candidates") karena
+        // columnValueToFileObject memakai TABLE; route {model} generik bisa
+        // dash ("voting-candidates"). Keduanya dipetakan ke model tunggal.
+        $aliases = [
+            'voting_candidates' => \App\Models\VotingCandidate::class,
+            'voting-candidates' => \App\Models\VotingCandidate::class,
+        ];
+        $classModel = $aliases[$model]
+            ?? ("\\App\\Models\\" . Str::ucfirst(Str::camel(Str::singular($model))));
         if (!class_exists($classModel))
             throw new CoreException("Not found", 404);
 
-        if (!$classModel::FILEROOT)
+        if (!defined("$classModel::FILEROOT") || !$classModel::FILEROOT)
             throw new CoreException("Not found", 404);
 
         $sql = "SELECT A." . $field . " FROM " . $classModel::TABLE . " A WHERE A.id = :id";
@@ -144,11 +152,16 @@ class UploadController extends Controller
 
     public function getTumbnailFile($model, $field, $id, $time)
     {
-        $classModel = "\\App\\Models\\" . Str::ucfirst(Str::camel($model));
+        $aliases = [
+            'voting_candidates' => \App\Models\VotingCandidate::class,
+            'voting-candidates' => \App\Models\VotingCandidate::class,
+        ];
+        $classModel = $aliases[$model]
+            ?? ("\\App\\Models\\" . Str::ucfirst(Str::camel(Str::singular($model))));
         if (!class_exists($classModel))
             throw new CoreException("Not found", 404);
 
-        if (!$classModel::FILEROOT)
+        if (!defined("$classModel::FILEROOT") || !$classModel::FILEROOT)
             throw new CoreException("Not found", 404);
 
         $sql = "SELECT A." . $field . " FROM " . $classModel::TABLE . " A WHERE A.id = :id";
@@ -176,11 +189,16 @@ class UploadController extends Controller
 
     public function downloadFile($model, $field, $id, $time)
     {
-        $classModel = "\\App\\Models\\" . Str::ucfirst(Str::camel($model));
+        $aliases = [
+            'voting_candidates' => \App\Models\VotingCandidate::class,
+            'voting-candidates' => \App\Models\VotingCandidate::class,
+        ];
+        $classModel = $aliases[$model]
+            ?? ("\\App\\Models\\" . Str::ucfirst(Str::camel(Str::singular($model))));
         if (!class_exists($classModel))
             throw new CoreException("Not found", 404);
 
-        if (!$classModel::FILEROOT)
+        if (!defined("$classModel::FILEROOT") || !$classModel::FILEROOT)
             throw new CoreException("Not found", 404);
 
         $sql = "SELECT A." . $field . " FROM " . $classModel::TABLE . " A WHERE A.id = :id";

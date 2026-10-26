@@ -39,15 +39,23 @@ class DoLogin extends CoreService
 
         // CEK USER ID
         $user = DB::selectOne("SELECT users.*, roles.role_code, roles.role_name
-            FROM users 
+            FROM users
             LEFT JOIN roles ON roles.id=users.role_id
-            WHERE users.email=:username OR users.username=:username", ["username" => $input['username']]);
+            WHERE users.email=:username OR users.username=:username OR users.nisn=:username", ["username" => $input['username']]);
 
         if (empty($user)) throw new CoreException(__("message.userNotFound", ['username' => $input["username"]]), 422);
 
         // if ($user->failed_attempt >= 10) throw new CoreException(__("message.tooManyAttempt"), 422);
 
-        $fieldType = filter_var($credentials["username"], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        if (filter_var($credentials["username"], FILTER_VALIDATE_EMAIL)) {
+            $fieldType = 'email';
+        } elseif (ctype_digit((string) $credentials["username"]) && !is_null($user->nisn) && (string) $credentials["username"] === (string) $user->nisn) {
+            // Login pakai NISN (siswa): padankan ke username agar guard tetap jalan.
+            $credentials["username"] = $user->username;
+            $fieldType = 'username';
+        } else {
+            $fieldType = 'username';
+        }
 
         if (Config::get("auth.defaults.guard") == "web") {
             if ($token = !Auth::attempt(array($fieldType => $input['username'], 'password' => $input['password']))) {
@@ -80,24 +88,6 @@ class DoLogin extends CoreService
         $data_user_before_login["rel_role_id"] = $user->role_name;
         $data_user_before_login["status_code"] = $user->status_code;
         $response = [];
-
-        if ($user->status_code == 'email_unverified') {
-            $response["message"] = __("message.userEmailNotVerifiedYet", ['email' => $user->email]);
-            $response["data_user_before_login"] = $data_user_before_login;
-            throw new CoreException(__("message.userEmailNotVerifiedYet", ['email' => $user->email]), 422, $data_user_before_login);
-        }
-
-        if ($user->status_code == 'email_verified') {
-            $response["message"] = __("message.userEmailVerifiedWaitingApproval", ['username' => $user->username]);
-            $response["data_user_before_login"] = $data_user_before_login;
-            throw new CoreException(__("message.userEmailVerifiedWaitingApproval", ['username' => $user->username]), 422, $data_user_before_login);
-        }
-
-        if ($user->status_code == 'user_rejected') {
-            $response["message"] = __("message.userRejectedByAdmin", ['username' => $user->username]);
-            $response["data_user_before_login"] = $data_user_before_login;
-            throw new CoreException(__("message.userRejectedByAdmin", ['username' => $user->username]), 422, $data_user_before_login);
-        }
 
         if ($user->status_code == 'user_nonactive') {
             $response["message"] = __("message.userNotActive", ['username' => $user->username]);
@@ -153,7 +143,10 @@ class DoLogin extends CoreService
             "user" => $user,
             "token" => $token,
             "permissions" => $permissionList,
-            "message" => __("message.loginSuccess"),
+            "must_change_password" => (bool) ($user->must_change_password ?? false),
+            "message" => ($user->must_change_password ?? false)
+                ? "Login berhasil. Segera ganti password Anda."
+                : __("message.loginSuccess"),
         ];
     }
 

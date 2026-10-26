@@ -8,6 +8,10 @@ class VotingCandidate extends Model
 {
     protected $table = 'voting_candidates';
 
+    const TABLE = 'voting_candidates';
+    const FILEROOT = '/voting-candidates';
+    const FIELD_UPLOAD = ['img_cover'];
+
     protected $fillable = [
         'voting_id',
         'img_cover',

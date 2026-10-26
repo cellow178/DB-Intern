@@ -27,6 +27,7 @@ class CreateRoleGroups extends Migration
         $data = [
             ["id" => 1, "role_group_name" => "Developer", "description" => null, "active" => true],
             ["id" => 2, "role_group_name" => "System Admin", "description" => null, "active" => true],
+            ["id" => 3, "role_group_name" => "Siswa", "description" => null, "active" => true],
         ];
         DB::table('role_groups')->insert($data);
         DB::statement("SELECT setval('role_groups_id_seq', (SELECT MAX(id) FROM role_groups)+1)");

@@ -29,8 +29,10 @@ class Me extends CoreService
                 users.username,
                 users.email,
                 users.nisn,
+                users.masa_studi,
                 users.role_id,
                 users.status_code,
+                users.must_change_password,
                 users.last_login_at,
                 roles.role_code,
                 roles.role_name
